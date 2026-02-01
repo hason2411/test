@@ -1477,7 +1477,8 @@ function submitAddProject(event) {
   btn.textContent = 'Creating...';
 
   google.script.run
-    .withSuccessHandler(() => {
+    .withSuccessHandler((response) => {
+      console.log('addProject response:', response);
       btn.disabled = false;
       btn.textContent = 'Create Project';
       closeProjectModal();
@@ -1485,9 +1486,10 @@ function submitAddProject(event) {
       loadProjects();
     })
     .withFailureHandler(error => {
+      console.error('addProject error:', error);
       btn.disabled = false;
       btn.textContent = 'Create Project';
-      showToast('Failed to create project: ' + error.message, 'error');
+      showToast('Failed to create project: ' + (error && error.message ? error.message : error), 'error');
     })
     .addProject([title, budget, startDate, endDate, leadId]);
 }
