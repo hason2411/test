@@ -378,21 +378,26 @@
   // 3. LOGIC DASHBOARD (BIỂU ĐỒ & FEED)
   function loadDashboardData() {
     google.script.run.withSuccessHandler(data => {
+      if (!data) {
+        console.warn('loadDashboardData: received no data');
+        return;
+      }
       if(document.getElementById('activeProjectsCount')) document.getElementById('activeProjectsCount').innerText = Number(data.totalProjects || data.projects || 0).toLocaleString();
       if(document.getElementById('fieldEquipCount')) document.getElementById('fieldEquipCount').innerText = Number(data.equip || 0).toLocaleString();
       if(document.getElementById('pendingReqCount')) document.getElementById('pendingReqCount').innerText = Number(data.pending || 0).toLocaleString();
 
       // Update trend / completion rate display if present
-      try {
-        const completion = Number(data.completionRate || 0);
-        const trends = document.querySelectorAll('.stat-card .trend-up, .stat-card .trend-down');
-        if (trends && trends.length > 0) {
-          // Set first stat-card to show completion rate
-          if (trends[0]) trends[0].textContent = `↗ ${completion}% completed`;
+      (function renderTrendsSafely() {
+        try {
+          const completion = Number((data && data.completionRate) ? data.completionRate : 0);
+          const trends = document.querySelectorAll('.stat-card .trend-up, .stat-card .trend-down');
+          if (trends && trends.length > 0) {
+            if (trends[0]) trends[0].textContent = `↗ ${completion}% completed`;
+          }
+        } catch (e) {
+          console.warn('Failed to render trends:', e);
         }
-      } catch (e) {
-        console.warn('Failed to render trends:', e);
-      }
+      })();
 
       renderChart(data.workload);
       renderFeed(data.feed);
