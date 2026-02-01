@@ -1430,6 +1430,31 @@ function openAddProjectModal() {
         }
       })
       .getUsersData();
+
+    // Check current user's role and show notice if insufficient
+    google.script.run.withSuccessHandler(user => {
+      const notice = document.getElementById('projectRoleNotice');
+      const btn = document.getElementById('addProjectBtn');
+      if (!user || !user.role) {
+        if (notice) {
+          notice.classList.remove('hidden');
+          notice.textContent = 'Unable to determine your role. Contact admin to get Coordinator role.';
+        }
+        if (btn) btn.disabled = true;
+        return;
+      }
+      const role = (user.role || '').toString();
+      if (role !== 'Coordinator' && role !== 'Admin') {
+        if (notice) {
+          notice.classList.remove('hidden');
+          notice.textContent = `Your role is '${role}'. Creating projects requires 'Coordinator' role. Ask an Admin to update the Users sheet.`;
+        }
+        if (btn) btn.disabled = true;
+      } else {
+        if (notice) { notice.classList.add('hidden'); notice.textContent = ''; }
+        if (btn) btn.disabled = false;
+      }
+    }).getCurrentUserInfo();
   }
 }
 
@@ -1494,7 +1519,12 @@ function submitAddProject(event) {
       console.error('addProject error:', error);
       btn.disabled = false;
       btn.textContent = 'Create Project';
-      showToast('Failed to create project: ' + (error && error.message ? error.message : error), 'error');
+      const msg = (error && error.message) ? error.message : (error || 'Unknown error');
+      if (msg.toString().toLowerCase().includes('requires role')) {
+        showToast('Permission denied: you need Coordinator role to create projects. Update your role in the Users sheet or ask Admin.', 'error');
+      } else {
+        showToast('Failed to create project: ' + msg, 'error');
+      }
     })
     .addProject([title, budget, startDate, endDate, leadId]);
 }
