@@ -1,0 +1,107 @@
+<div class="flex flex-col lg:flex-row gap-8">
+  
+  <div class="flex-[2] space-y-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="stat-card">
+        <div class="flex justify-between items-start">
+          <span class="label-title" data-i18n="active_projects">Active Projects</span>
+          <div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">📋</div>
+        </div>
+        <h3 class="stat-value" id="activeProjectsCount">--</h3>
+        <p class="trend-up">↗ +2% <span data-i18n="vs_last_month">vs last month</span></p>
+      </div>
+      
+      <div class="stat-card">
+        <div class="flex justify-between items-start">
+          <span class="label-title" data-i18n="equipment_field">Equipment in Field</span>
+          <div class="p-2 bg-blue-50 rounded-lg text-blue-600">📡</div>
+        </div>
+        <h3 class="stat-value" id="fieldEquipCount">--</h3>
+        <p class="trend-down">↘ -5% <span data-i18n="maintenance_alert">maintenance alert</span></p>
+      </div>
+
+      <div class="stat-card">
+        <div class="flex justify-between items-start">
+          <span class="label-title" data-i18n="pending_requests">Pending Requests</span>
+          <div class="p-2 bg-orange-50 rounded-lg text-orange-600">📅</div>
+        </div>
+        <h3 class="stat-value" id="pendingReqCount">--</h3>
+        <p class="trend-up">↗ +15% <span data-i18n="priority_shift">priority shift</span></p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h3 class="text-lg font-bold" data-i18n="workload_overview">Workload Overview</h3>
+          <p class="text-xs text-slate-400" data-i18n="current_tasks_staff">Current tasks per staff member (Burnout Tracking)</p>
+        </div>
+        <button class="text-emerald-600 text-xs font-bold border border-emerald-200 px-4 py-2 rounded-xl" data-i18n="view_details">View Details →</button>
+      </div>
+      <canvas id="workloadChart" height="150"></canvas>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+       <div class="p-6 bg-orange-50 border border-orange-100 rounded-[24px] flex gap-4">
+         <span class="text-2xl text-orange-500">⚠️</span>
+         <div>
+           <h4 class="font-bold text-orange-900 text-sm" data-i18n="critical_resource_alert">Critical Resource Alert</h4>
+           <p class="text-xs text-orange-700 mt-1" data-i18n="fuel_reserves_sector">Fuel reserves in Sector 4 are below 15%.</p>
+         </div>
+       </div>
+       <div class="p-6 bg-emerald-50 border border-emerald-100 rounded-[24px] flex gap-4">
+         <span class="text-2xl text-emerald-500">✅</span>
+         <div>
+           <h4 class="font-bold text-emerald-900 text-sm">Inventory Check</h4>
+           <p class="text-xs text-emerald-700 mt-1">All field GPS trackers synchronized.</p>
+         </div>
+       </div>
+    </div>
+  </div>
+
+  <div class="flex-1">
+    <div class="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100 min-h-full">
+      <div class="flex justify-between items-center mb-8">
+        <h3 class="font-bold text-lg" data-i18n="weekly_sync">Weekly Sync</h3>
+        <button onclick="openPostModal()" class="bg-emerald-50 p-2 rounded-xl text-emerald-600 hover:bg-emerald-100 transition-colors" title="Post new update">
+          <span class="material-symbols-outlined text-sm">add</span>
+        </button>
+      </div>
+      
+      <div id="weeklyFeed" class="space-y-4">
+        <p class="text-xs text-slate-400 text-center py-10" data-i18n="loading_field_updates">Loading field updates...</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Post Update Modal -->
+<div id="postModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-[2rem] p-8 max-w-lg w-full shadow-2xl border border-slate-100">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="text-xl font-black text-slate-900" data-i18n="post_update">Post Update</h3>
+      <button onclick="closePostModal()" class="text-slate-400 hover:text-slate-600">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    
+    <form onsubmit="submitPost(event)">
+      <textarea id="postContent" class="w-full border border-slate-200 rounded-xl p-4 text-sm bg-slate-50 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none resize-none" rows="4" placeholder="Write your update..." data-i18n="write_your_update" required></textarea>
+      
+      <div class="flex items-center gap-3 mt-4">
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" id="pinPost" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+          <span data-i18n="pinned">Pin this post</span>
+        </label>
+      </div>
+      
+      <div class="flex gap-3 mt-6">
+        <button type="submit" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-emerald-700 transition active:scale-95" data-i18n="post">Post</button>
+        <button type="button" onclick="closePostModal()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition" data-i18n="cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

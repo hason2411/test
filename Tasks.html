@@ -1,0 +1,90 @@
+<div class="flex flex-col h-full overflow-hidden">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 shrink-0">
+    <div class="bg-white border border-slate-200 p-6 rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-sm font-medium text-slate-500" data-i18n="pending_tasks">Pending Tasks</p>
+        <div class="p-2 bg-emerald-50 rounded-lg">
+          <span class="material-symbols-outlined text-emerald-600">assignment</span>
+        </div>
+      </div>
+      <div class="flex items-end gap-2">
+        <h3 class="text-3xl font-bold text-slate-900" id="statPending">--</h3>
+        <span class="text-xs font-bold text-emerald-700 pb-1 bg-emerald-100 px-1.5 py-0.5 rounded" data-i18n="active">Active</span>
+      </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 p-6 rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-sm font-medium text-slate-500" data-i18n="overdue_urgent">Overdue / Urgent</p>
+        <div class="p-2 bg-red-50 rounded-lg">
+          <span class="material-symbols-outlined text-red-500">warning</span>
+        </div>
+      </div>
+      <div class="flex items-end gap-2">
+        <h3 class="text-3xl font-bold text-slate-900" id="statUrgent">--</h3>
+        <span class="text-xs font-bold text-red-600 pb-1 bg-red-50 px-1.5 py-0.5 rounded" data-i18n="action_needed">Action Needed</span>
+      </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 p-6 rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-sm font-medium text-slate-500" data-i18n="completion_rate">Completion Rate</p>
+        <div class="p-2 bg-blue-50 rounded-lg">
+          <span class="material-symbols-outlined text-blue-500">check_circle</span>
+        </div>
+      </div>
+      <div class="flex items-end gap-2">
+        <h3 class="text-3xl font-bold text-slate-900">85%</h3>
+        <span class="text-xs font-bold text-blue-600 pb-1 bg-blue-50 px-1.5 py-0.5 rounded" data-i18n="this_week">This Week</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col xl:flex-row gap-8 flex-1 overflow-hidden">
+    
+    <div class="flex-1 min-w-0 flex flex-col">
+      <div class="flex items-center justify-between mb-6 shrink-0">
+        <h2 class="text-xl font-bold tracking-tight text-slate-900" data-i18n="project_tasks">Project Tasks</h2>
+        <div class="flex gap-2">
+          <button onclick="openAddModal()" class="flex items-center gap-2 px-3 py-1.5 bg-[#064e3b] text-white rounded-lg text-xs font-bold shadow-sm hover:bg-[#065f46] transition-colors">
+            <span class="material-symbols-outlined text-sm">add</span> <span data-i18n="new_task">New Task</span>
+          </button>
+          <button class="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold hover:bg-slate-50 text-slate-600 shadow-sm transition-colors">
+            <span class="material-symbols-outlined text-sm">filter_list</span> Filter
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex-1 flex flex-col">
+        <div class="overflow-y-auto custom-scrollbar flex-1">
+          <table class="w-full text-left border-collapse">
+            <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 z-10 shadow-sm">
+              <tr>
+                <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Task Title</th>
+                <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Project Context</th>
+                <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Assignee</th>
+                <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Priority</th>
+                <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center">Deadline</th>
+                <th class="px-6 py-4">Action</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody" class="divide-y divide-slate-100 bg-white">
+              </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <aside class="w-full xl:w-80 shrink-0 overflow-y-auto custom-scrollbar pb-4">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-bold tracking-tight text-slate-900">Urgent Focus</h2>
+        <span class="bg-red-50 text-red-600 border border-red-100 text-[10px] font-bold px-2 py-0.5 rounded-full">High Priority</span>
+      </div>
+      
+      <div id="urgentTasksFeed" class="space-y-4">
+        <p class="text-xs text-slate-400 text-center italic">Đang tải dữ liệu...</p>
+      </div>
+    </aside>
+
+  </div>
+</div>

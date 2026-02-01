@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <?!= include('CSS'); ?>
+</head>
+<body class="bg-bg-body text-slate-800 font-display antialiased">
+
+  <aside class="fixed left-0 top-0 w-64 h-screen bg-white border-r border-border-subtle flex flex-col justify-between py-6 shadow-sm z-20">
+    <div class="flex flex-col gap-8 px-4">
+<div class="flex items-center gap-3 px-2">
+<div class="bg-primary/10 p-2 rounded-lg border border-primary/10">
+<span class="material-symbols-outlined text-primary text-3xl">business</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 text-base font-bold leading-tight tracking-tight">CTNC Hub</h1>
+<p class="text-slate-500 text-xs font-medium" data-i18n="management_system">Management System</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1.5">
+<button onclick="loadPage('Dashboard')" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/5 text-primary-dark border border-primary/20 shadow-sm">
+<span class="material-symbols-outlined text-[24px]">dashboard</span>
+<p class="text-sm font-semibold" data-i18n="dashboard">Dashboard</p>
+</button>
+<button onclick="loadPage('Tasks')" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[24px]">work</span>
+<p class="text-sm font-medium" data-i18n="projects_tasks">Projects & Tasks</p>
+</button>
+<button onclick="loadPage('Projects')" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[24px]">work</span>
+<p class="text-sm font-medium">Projects</p>
+</button>
+<button onclick="loadPage('Inventory')" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[24px]">inventory_2</span>
+<p class="text-sm font-medium" data-i18n="inventory">Inventory</p>
+</button>
+<button onclick="loadPage('Users')" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[24px]">group</span>
+<p class="text-sm font-medium" data-i18n="personnel">Personnel</p>
+</button>
+</nav>
+
+<div class="px-4">
+<div class="p-3 bg-slate-50 border border-border-subtle rounded-xl flex items-center gap-3 hover:bg-slate-100 transition-colors cursor-pointer">
+<div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-blue-600">person</span>
+</div>
+<div class="overflow-hidden">
+<p class="text-sm font-bold truncate text-slate-800" id="userDisplayName">Loading...</p>
+<p class="text-[10px] uppercase tracking-wider text-primary font-semibold" id="userDisplayRole" data-i18n="identifying">Identifying...</p>
+</div>
+</div>
+</div>
+  </aside>
+
+  <main class="ml-64 flex flex-col min-w-0 overflow-hidden bg-bg-body">
+    
+    <header class="h-24 bg-white border-b border-slate-200 px-10 flex items-center justify-between shadow-sm">
+      <div>
+        <h2 id="pageTitle" class="text-2xl font-black text-slate-800 tracking-tight">Dashboard</h2>
+        <p class="text-sm text-slate-400 font-medium italic"><span data-i18n="welcome_back">Welcome back</span>, <span id="userWelcomeName">Coordinator</span></p>
+      </div>
+      
+      <div class="flex items-center gap-6">
+        <!-- Language Switcher -->
+        <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-1">
+          <button onclick="setLanguage('vi')" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all" id="langVi">VI</button>
+          <button onclick="setLanguage('en')" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all" id="langEn">EN</button>
+        </div>
+        
+        <div class="h-10 w-[1px] bg-slate-200"></div>
+        
+        <div class="flex items-center gap-4">
+          <div class="text-right">
+            <p id="userDisplayName" class="text-sm font-bold text-slate-800">Loading...</p>
+            <p id="userDisplayRole" class="text-[10px] text-emerald-600 font-bold uppercase tracking-widest" data-i18n="identifying">Identifying...</p>
+          </div>
+          <div id="userAvatar" class="w-12 h-12 bg-blue-100 border-2 border-white shadow-md rounded-2xl flex items-center justify-center font-black text-blue-800 uppercase text-lg">
+            ?
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <div id="content" class="p-10 overflow-auto flex-1">
+      <?!= include('Dashboard'); ?>
+    </div>
+  </main>
+
+  <div id="addModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-[2rem] p-10 max-w-lg w-full shadow-2xl border border-slate-100 relative overflow-hidden">
+      <div class="absolute top-0 right-0 p-10 text-slate-50 text-8xl font-black select-none pointer-events-none">NEW</div>
+      
+      <div class="relative z-10">
+        <h3 id="modalTitle" class="text-2xl font-black text-slate-800 mb-2 uppercase tracking-tight text-emerald-900" data-i18n="add_information">Add Information</h3>
+        <p id="modalSub" class="text-sm text-slate-400 mb-8 font-medium italic" data-i18n="fill_details">Please fill in the details below to sync with the database.</p>
+        
+        <div id="modalFields" class="space-y-5">
+          </div>
+        
+        <div class="flex gap-4 mt-10">
+          <button onclick="submitNewRecord()" id="submitBtn" class="flex-[2] bg-[#064e3b] text-white py-4 rounded-2xl font-black shadow-xl shadow-emerald-900/20 hover:bg-[#065f46] transition-all disabled:opacity-50" data-i18n="save_record">
+            Save Record
+          </button>
+          <button onclick="closeAddModal()" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold hover:bg-slate-200 transition-all">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <?!= include('JavaScript'); ?>
+</body>
+</html>

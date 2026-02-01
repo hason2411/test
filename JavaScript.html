@@ -1,0 +1,1546 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  let currentPage = 'Dashboard';
+  let isSubmitting = false;
+  let currentLanguage = 'vi'; // Default language
+
+  // TRANSLATIONS OBJECT
+  const translations = {
+    vi: {
+      // Navigation
+      "dashboard": "Bảng điều khiển",
+      "projects_tasks": "Dự án & Nhiệm vụ",
+      "inventory": "Kho hàng",
+      "personnel": "Nhân sự",
+      "management_system": "Hệ thống Quản lý",
+
+      // Header
+      "welcome_back": "Chào mừng trở lại",
+      "create_new_record": "+ Tạo bản ghi mới",
+
+      // Dashboard
+      "active_projects": "Dự án Đang hoạt động",
+      "equipment_field": "Thiết bị Tại chỗ",
+      "pending_requests": "Yêu cầu Chờ xử lý",
+      "workload_overview": "Tổng quan Công việc",
+      "current_tasks_staff": "Nhiệm vụ hiện tại theo nhân viên (Theo dõi Kiệt sức)",
+      "view_details": "Xem Chi tiết →",
+      "critical_resource_alert": "Cảnh báo Tài nguyên Quan trọng",
+      "fuel_reserves_sector": "Dự trữ nhiên liệu ở Khu vực 4 dưới 15%.",
+      "recent_activities": "Hoạt động Gần đây",
+      "no_recent_activities": "Không có hoạt động gần đây",
+      "weekly_sync": "Đồng bộ Tuần",
+      "loading_field_updates": "Đang tải cập nhật thực địa...",
+      "post_update": "Đăng cập nhật",
+      "write_your_update": "Viết cập nhật của bạn...",
+      "post": "Đăng",
+      "pinned": "Đã ghim",
+      "done": "Hoàn thành",
+      "mark_as_done": "Đánh dấu hoàn thành",
+      "unpin": "Gỡ ghim",
+
+      // Tasks
+      "task_management": "Quản lý Nhiệm vụ",
+      "all_tasks": "Tất cả Nhiệm vụ",
+      "my_tasks": "Nhiệm vụ của Tôi",
+      "overdue": "Quá hạn",
+      "in_progress": "Đang thực hiện",
+      "completed": "Hoàn thành",
+      "search_tasks": "Tìm kiếm nhiệm vụ...",
+      "pending_tasks": "Nhiệm vụ Chờ xử lý",
+      "overdue_urgent": "Quá hạn / Khẩn cấp",
+      "completion_rate": "Tỷ lệ Hoàn thành",
+      "active": "Đang hoạt động",
+      "action_needed": "Cần hành động",
+      "this_week": "Tuần này",
+      "project_tasks": "Nhiệm vụ Dự án",
+      "new_task": "Nhiệm vụ Mới",
+
+      // Inventory
+      "inventory_management": "Quản lý Kho hàng",
+      "search_inventory": "Tìm kiếm thiết bị...",
+      "add_equipment": "Thêm Thiết bị",
+      "equipment_inventory": "Kho Thiết bị",
+      "asset_management": "Quản lý Tài sản",
+      "all_status": "Tất cả Trạng thái",
+      "available": "Có sẵn",
+      "borrowed": "Đã mượn",
+      "asset_name": "Tên Tài sản",
+      "current_holder": "Người Giữ Hiện tại",
+      "status": "Trạng thái",
+      "action": "Hành động",
+      "checkout_equipment": "Mượn Thiết bị",
+      "initial_condition": "Tình trạng Ban đầu",
+      "describe_equipment_condition": "Mô tả tình trạng thiết bị...",
+      "checkout": "MƯỢN",
+      "cancel": "Hủy",
+      "return_to_hub": "Trả về Hub",
+      "return_condition": "Tình trạng Trả về",
+      "equipment_condition_on_return": "Tình trạng thiết bị khi trả về...",
+      "confirm_return": "XÁC NHẬN TRẢ",
+      "close": "Đóng",
+      "total_equipment": "Tổng Thiết bị",
+      "in_use": "Đang sử dụng",
+      "under_maintenance": "Đang bảo trì",
+
+      // Users
+      "user_management": "Quản lý Người dùng",
+      "add_user": "Thêm Người dùng",
+
+      // Modal
+      "add_information": "Thêm Thông tin",
+      "fill_details": "Vui lòng điền chi tiết bên dưới để đồng bộ với cơ sở dữ liệu.",
+      "save_record": "Lưu Bản ghi",
+      "cancel": "Hủy",
+
+      // Status
+      "loading": "Đang tải...",
+      "identifying": "Đang xác định...",
+      "vs_last_month": "so với tháng trước",
+      "maintenance_alert": "cảnh báo bảo trì",
+      "priority_shift": "điều chỉnh ưu tiên"
+    },
+    en: {
+      // Navigation
+      "dashboard": "Dashboard",
+      "projects_tasks": "Projects & Tasks",
+      "inventory": "Inventory",
+      "personnel": "Personnel",
+      "management_system": "Management System",
+
+      // Header
+      "welcome_back": "Welcome back",
+      "create_new_record": "+ Create New Record",
+
+      // Dashboard
+      "active_projects": "Active Projects",
+      "equipment_field": "Equipment in Field",
+      "pending_requests": "Pending Requests",
+      "workload_overview": "Workload Overview",
+      "current_tasks_staff": "Current tasks per staff member (Burnout Tracking)",
+      "view_details": "View Details →",
+      "critical_resource_alert": "Critical Resource Alert",
+      "fuel_reserves_sector": "Fuel reserves in Sector 4 are below 15%.",
+      "recent_activities": "Recent Activities",
+      "no_recent_activities": "No recent activities",
+      "weekly_sync": "Weekly Sync",
+      "loading_field_updates": "Loading field updates...",
+      "post_update": "Post Update",
+      "write_your_update": "Write your update...",
+      "post": "Post",
+      "pinned": "Pinned",
+      "done": "Done",
+      "mark_as_done": "Mark as Done",
+      "unpin": "Unpin",
+
+      // Tasks
+      "task_management": "Task Management",
+      "all_tasks": "All Tasks",
+      "my_tasks": "My Tasks",
+      "overdue": "Overdue",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "search_tasks": "Search tasks...",
+      "pending_tasks": "Pending Tasks",
+      "overdue_urgent": "Overdue / Urgent",
+      "completion_rate": "Completion Rate",
+      "active": "Active",
+      "action_needed": "Action Needed",
+      "this_week": "This Week",
+      "project_tasks": "Project Tasks",
+      "new_task": "New Task",
+
+      // Inventory
+      "inventory_management": "Inventory Management",
+      "search_inventory": "Search equipment...",
+      "add_equipment": "Add Equipment",
+      "equipment_inventory": "Equipment Inventory",
+      "asset_management": "Asset Management",
+      "all_status": "All Status",
+      "available": "Available",
+      "borrowed": "Borrowed",
+      "asset_name": "Asset Name",
+      "current_holder": "Current Holder",
+      "status": "Status",
+      "action": "Action",
+      "checkout_equipment": "Checkout Equipment",
+      "initial_condition": "Initial Condition",
+      "describe_equipment_condition": "Describe equipment condition...",
+      "checkout": "CHECKOUT",
+      "cancel": "Cancel",
+      "return_to_hub": "Return to Hub",
+      "return_condition": "Return Condition",
+      "equipment_condition_on_return": "Equipment condition on return...",
+      "confirm_return": "CONFIRM RETURN",
+      "close": "Close",
+      "total_equipment": "Total Equipment",
+      "in_use": "In Use",
+      "under_maintenance": "Under Maintenance",
+
+      // Users
+      "user_management": "User Management",
+      "add_user": "Add User",
+
+      // Modal
+      "add_information": "Add Information",
+      "fill_details": "Please fill in the details below to sync with the database.",
+      "save_record": "Save Record",
+      "cancel": "Cancel",
+
+      // Status
+      "loading": "Loading...",
+      "identifying": "Identifying...",
+      "vs_last_month": "vs last month",
+      "maintenance_alert": "maintenance alert",
+      "priority_shift": "priority shift"
+    }
+  };
+
+  // LANGUAGE FUNCTIONS
+  function setLanguage(lang) {
+    currentLanguage = lang;
+    localStorage.setItem('preferredLanguage', lang);
+    updateLanguage();
+    updateUILanguage();
+  }
+
+  function updateLanguage() {
+    document.documentElement.lang = currentLanguage;
+    const elements = document.querySelectorAll('[data-i18n]');
+    elements.forEach(element => {
+      const key = element.getAttribute('data-i18n');
+      if (translations[currentLanguage][key]) {
+        if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+          element.placeholder = translations[currentLanguage][key];
+        } else if (element.tagName === 'OPTION') {
+          element.textContent = translations[currentLanguage][key];
+        } else {
+          element.textContent = translations[currentLanguage][key];
+        }
+      }
+    });
+
+    // Update language switcher buttons
+    const langVi = document.getElementById('langVi');
+    const langEn = document.getElementById('langEn');
+    if (currentLanguage === 'vi') {
+      langVi.classList.add('bg-primary', 'text-white');
+      langEn.classList.remove('bg-primary', 'text-white');
+    } else {
+      langEn.classList.add('bg-primary', 'text-white');
+      langVi.classList.remove('bg-primary', 'text-white');
+    }
+  }
+
+  function updateUILanguage() {
+    // Update page title
+    const pageTitles = {
+      'Dashboard': currentLanguage === 'vi' ? 'Bảng điều khiển Chiến lược' : 'Strategic Dashboard',
+      'Tasks': currentLanguage === 'vi' ? 'Dự án & Nhiệm vụ' : 'Projects & Tasks',
+      'Inventory': currentLanguage === 'vi' ? 'Kho hàng' : 'Inventory',
+      'Users': currentLanguage === 'vi' ? 'Nhân sự' : 'Personnel'
+    };
+    document.getElementById('pageTitle').textContent = pageTitles[currentPage] || currentPage;
+
+    // Update sidebar active state
+    const links = document.querySelectorAll('.sidebar-link');
+    links.forEach(link => {
+      link.classList.remove('bg-primary/10', 'text-primary-dark', 'border-primary/10');
+    });
+
+    // Reload current page content to update language
+    if (currentPage) {
+      loadPage(currentPage);
+    }
+  }
+
+  // 1. KHỞI TẠO HỆ THỐNG
+  window.onload = () => {
+    // Load saved language preference
+    const savedLang = localStorage.getItem('preferredLanguage');
+    if (savedLang && ['vi', 'en'].includes(savedLang)) {
+      currentLanguage = savedLang;
+    }
+    updateLanguage();
+    loadPage('Dashboard');
+    updateUserHeader();
+  };
+
+  function updateUserHeader() {
+    google.script.run
+      .withSuccessHandler(user => {
+        // Update all user display elements
+        const userDisplayNames = document.querySelectorAll('#userDisplayName');
+        const userDisplayRoles = document.querySelectorAll('#userDisplayRole');
+        const userWelcomeNames = document.querySelectorAll('#userWelcomeName');
+        const userAvatars = document.querySelectorAll('#userAvatar');
+
+        userDisplayNames.forEach(el => {
+          if (el) el.innerText = user.name || 'Unknown User';
+        });
+
+        userDisplayRoles.forEach(el => {
+          if (el) el.innerText = user.role || 'User';
+        });
+
+        userWelcomeNames.forEach(el => {
+          if (el) el.innerText = user.name || 'User';
+        });
+
+        userAvatars.forEach(el => {
+          if (el) el.innerText = (user.name || '?').charAt(0).toUpperCase();
+        });
+      })
+      .withFailureHandler(error => {
+        console.error('Failed to load user info:', error);
+        // Set fallback values
+        const userDisplayNames = document.querySelectorAll('#userDisplayName');
+        const userDisplayRoles = document.querySelectorAll('#userDisplayRole');
+        const userWelcomeNames = document.querySelectorAll('#userWelcomeName');
+        const userAvatars = document.querySelectorAll('#userAvatar');
+
+        userDisplayNames.forEach(el => {
+          if (el) el.innerText = 'User';
+        });
+
+        userDisplayRoles.forEach(el => {
+          if (el) el.innerText = 'Guest';
+        });
+
+        userWelcomeNames.forEach(el => {
+          if (el) el.innerText = 'User';
+        });
+
+        userAvatars.forEach(el => {
+          if (el) el.innerText = '?';
+        });
+      })
+      .getCurrentUserInfo();
+  }
+
+  // Modal functions - defined early for button availability
+  function openContextualModal() {
+    if (currentPage === 'Inventory') {
+      // Open add equipment modal for inventory page
+      openAddEquipmentModal();
+    } else {
+      // Open general add modal for other pages
+      openAddModal();
+    }
+  }
+
+  function openAddModal() {
+    document.getElementById('addModal').classList.remove('hidden');
+    generateFields();
+  }
+
+  function closeAddModal() {
+    document.getElementById('addModal').classList.add('hidden');
+  }
+
+  // 2. ĐIỀU HƯỚNG TRANG
+  function loadPage(page) {
+    currentPage = page;
+    document.getElementById('pageTitle').innerText = (page === 'Dashboard') ? 'Strategic Dashboard' : page;
+    
+    const links = document.querySelectorAll('.sidebar-link');
+    links.forEach(link => {
+      link.classList.remove('bg-primary/10', 'text-primary-dark', 'border-primary/10');
+      if (link.innerText.includes(page)) {
+        link.classList.add('bg-primary/10', 'text-primary-dark', 'border-primary/10');
+      }
+    });
+
+    const content = document.getElementById('content');
+    content.innerHTML = `<div class="p-8 space-y-6"><div class="skeleton h-32 w-full rounded-2xl opacity-50"></div><div class="skeleton h-64 w-full rounded-2xl opacity-50"></div></div>`;
+
+    google.script.run.withSuccessHandler(html => {
+      content.innerHTML = html;
+      if (page === 'Dashboard') loadDashboardData();
+      if (page === 'Projects') {
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+          loadProjects();
+        }, 100);
+      }
+      if (page === 'Inventory') {
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+          loadInventory();
+          setupInventoryFilters();
+        }, 100);
+      }
+      if (page === 'Tasks') loadTasks();
+      if (page === 'Users') loadUsers();
+    }).getPageContent(page);
+  }
+
+  // 3. LOGIC DASHBOARD (BIỂU ĐỒ & FEED)
+  function loadDashboardData() {
+    google.script.run.withSuccessHandler(data => {
+      if(document.getElementById('activeProjectsCount')) document.getElementById('activeProjectsCount').innerText = Number(data.totalProjects || data.projects || 0).toLocaleString();
+      if(document.getElementById('fieldEquipCount')) document.getElementById('fieldEquipCount').innerText = Number(data.equip || 0).toLocaleString();
+      if(document.getElementById('pendingReqCount')) document.getElementById('pendingReqCount').innerText = Number(data.pending || 0).toLocaleString();
+
+      // Update trend / completion rate display if present
+      try {
+        const completion = Number(data.completionRate || 0);
+        const trends = document.querySelectorAll('.stat-card .trend-up, .stat-card .trend-down');
+        if (trends && trends.length > 0) {
+          // Set first stat-card to show completion rate
+          if (trends[0]) trends[0].textContent = `↗ ${completion}% completed`;
+        }
+      } catch (e) {
+        console.warn('Failed to render trends:', e);
+      }
+
+      renderChart(data.workload);
+      renderFeed(data.feed);
+    }).getDashboardStats();
+  }
+
+  function renderChart(workloadData) {
+    const ctx = document.getElementById('workloadChart')?.getContext('2d');
+    if(!ctx) return;
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: workloadData.labels,
+        datasets: [{
+          data: workloadData.values,
+          backgroundColor: '#11d462',
+          borderRadius: 8,
+          barThickness: 24
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: { 
+          y: { beginAtZero: true, grid: { color: '#f1f5f9' }, border: { display: false } },
+          x: { grid: { display: false }, border: { display: false } }
+        }
+      }
+    });
+  }
+
+  function renderFeed(feedData) {
+    const container = document.getElementById('weeklyFeed');
+    if(!container) return;
+    
+    if (feedData.length === 0) {
+      container.innerHTML = `<p class="text-xs text-slate-400 text-center py-10" data-i18n="no_recent_activities">No recent activities</p>`;
+      return;
+    }
+    
+    container.innerHTML = feedData.map(item => {
+      const isPost = item.type === 'post';
+      const isPinned = item.isPinned;
+      
+      let actions = '';
+      if (isPost) {
+        actions = `
+          <div class="flex gap-2 mt-3">
+            <button onclick="togglePin('${item.id}')" class="text-xs px-2 py-1 rounded-lg font-bold transition ${isPinned ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}" title="${isPinned ? 'Unpin' : 'Pin'}">
+              📌 ${isPinned ? translations[currentLanguage]['unpin'] || 'Unpin' : translations[currentLanguage]['pinned'] || 'Pin'}
+            </button>
+            <button onclick="markPostDone('${item.id}')" class="text-xs px-2 py-1 rounded-lg font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 transition" title="Mark as Done">
+              ✅ ${translations[currentLanguage]['done'] || 'Done'}
+            </button>
+          </div>
+        `;
+      }
+      
+      return `
+        <div class="feed-item p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all ${isPinned ? 'ring-2 ring-emerald-200 bg-emerald-50/30' : ''}">
+          <div class="flex gap-4">
+            <div class="size-10 ${isPost ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'} rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-xs">
+              ${isPost ? '📝' : '🔄'}
+            </div>
+            <div class="flex-1">
+              <div class="flex justify-between items-center mb-1">
+                <div class="flex items-center gap-2">
+                  <h4 class="font-bold text-sm text-slate-800">${item.name}</h4>
+                  ${isPinned ? '<span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-bold">📌 PINNED</span>' : ''}
+                </div>
+                <span class="text-[10px] text-slate-400 font-bold">${item.time}</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed ${isPost ? 'mb-2' : ''}">${item.content}</p>
+              ${isPost ? actions : `<div class="mt-2"><span class="bg-slate-50 text-slate-500 px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider">#${item.tag}</span></div>`}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // 4. LOGIC INVENTORY - Optimized for new interface
+  function loadInventory(forceRefresh = false) {
+    // Show loading state immediately
+    showLoadingState();
+
+    // Use Promise.race for timeout handling
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout after 8 seconds')), 8000);
+    });
+
+    const requestPromise = new Promise((resolve, reject) => {
+      if (forceRefresh) {
+        // Clear cache before loading
+        google.script.run
+          .withSuccessHandler(() => {
+            google.script.run
+              .withSuccessHandler(resolve)
+              .withFailureHandler(reject)
+              .getInventoryData();
+          })
+          .withFailureHandler(reject)
+          .clearInventoryCache();
+      } else {
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject)
+          .getInventoryData();
+      }
+    });
+
+    Promise.race([requestPromise, timeoutPromise])
+      .then(data => {
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid data format received');
+        }
+        window.inventoryData = data; // Store for filtering
+        renderInventory(data);
+      })
+      .catch(error => {
+        console.error('Failed to load inventory:', error);
+        showErrorState(error.message);
+      });
+  }
+
+  function showLoadingState() {
+    const container = document.getElementById('inventoryListContainer');
+    const loadingState = document.getElementById('loadingState');
+    const equipmentGrid = document.getElementById('equipmentGrid');
+    const emptyState = document.getElementById('emptyState');
+
+    if (container && loadingState && equipmentGrid && emptyState) {
+      loadingState.classList.remove('hidden');
+      equipmentGrid.classList.add('hidden');
+      emptyState.classList.add('hidden');
+    }
+  }
+
+  function showErrorState(message) {
+    const container = document.getElementById('inventoryListContainer');
+    if (container) {
+      container.innerHTML = `
+        <div class="text-center py-12">
+          <div class="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+            <span class="material-symbols-outlined text-red-600 text-2xl">error</span>
+          </div>
+          <h3 class="text-lg font-medium text-slate-900 mb-2">Failed to load inventory</h3>
+          <p class="text-slate-600 mb-6">${message}</p>
+          <button onclick="loadInventory(true)" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            Try Again
+          </button>
+        </div>
+      `;
+    }
+  }
+
+  function renderInventory(data) {
+    // Update stats cards first
+    updateStatsCards(data);
+
+    // Apply filters
+    const filteredData = applyFilters(data);
+
+    // Update item count
+    updateItemCount(filteredData.length);
+
+    // Show appropriate state
+    if (filteredData.length === 0) {
+      showEmptyState();
+      return;
+    }
+
+    // Render equipment grid
+    renderEquipmentGrid(filteredData);
+  }
+
+  function updateStatsCards(data) {
+    const total = data.length;
+    const inUse = data.filter(r => r && r[4] === 'Borrowed').length;
+    const maintenance = data.filter(r => r && r[4] === 'Broken').length;
+    const available = total - inUse - maintenance;
+
+    // Update stat elements
+    const statElements = {
+      'statTotal': total,
+      'statAvailable': available,
+      'statInUse': inUse,
+      'statMaintenance': maintenance
+    };
+
+    Object.entries(statElements).forEach(([id, value]) => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.textContent = value;
+      }
+    });
+  }
+
+  function applyFilters(data) {
+    const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+
+    return data.filter(row => {
+      if (!row || row.length < 6) return false;
+
+      // Search filter: name or serial number
+      const matchesSearch = (row[1] || '').toLowerCase().includes(searchTerm) ||
+                           (row[2] || '').toLowerCase().includes(searchTerm);
+
+      // Status filter
+      const matchesStatus = statusFilter === 'all' ||
+                           (statusFilter === 'Available' && row[4] === 'Available') ||
+                           (statusFilter === 'Borrowed' && row[4] === 'Borrowed') ||
+                           (statusFilter === 'Broken' && row[4] === 'Broken');
+
+      return matchesSearch && matchesStatus;
+    });
+  }
+
+  function updateItemCount(count) {
+    const itemCountElement = document.getElementById('itemCount');
+    if (itemCountElement) {
+      itemCountElement.textContent = `${count} item${count !== 1 ? 's' : ''}`;
+    }
+  }
+
+  function showEmptyState() {
+    const loadingState = document.getElementById('loadingState');
+    const equipmentGrid = document.getElementById('equipmentGrid');
+    const emptyState = document.getElementById('emptyState');
+
+    if (loadingState && equipmentGrid && emptyState) {
+      loadingState.classList.add('hidden');
+      equipmentGrid.classList.add('hidden');
+      emptyState.classList.remove('hidden');
+    }
+  }
+
+  function renderEquipmentGrid(filteredData) {
+    const equipmentGrid = document.getElementById('equipmentGrid');
+    const loadingState = document.getElementById('loadingState');
+    const emptyState = document.getElementById('emptyState');
+
+    if (!equipmentGrid) return;
+
+    // Generate equipment cards
+    const cardsHtml = filteredData.map(row => createEquipmentCard(row)).join('');
+
+    // Update DOM
+    equipmentGrid.innerHTML = cardsHtml;
+
+    // Show grid, hide others
+    equipmentGrid.classList.remove('hidden');
+    if (loadingState) loadingState.classList.add('hidden');
+    if (emptyState) emptyState.classList.add('hidden');
+  }
+
+  function createEquipmentCard(row) {
+    const [id, name, serial, condition, status, holder] = row;
+    const statusConfig = getStatusConfig(status);
+    const actionButton = getActionButton(id, status);
+
+    return `
+      <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg hover:border-slate-300 transition-all duration-200 group">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-start gap-4 flex-1">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 rounded-xl ${statusConfig.bgColor} flex items-center justify-center border-2 ${statusConfig.borderColor} group-hover:scale-105 transition-transform">
+                <span class="material-symbols-outlined text-lg ${statusConfig.iconColor}">${statusConfig.icon}</span>
+              </div>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">${name}</h3>
+              <p class="text-sm text-slate-500 font-mono">${serial}</p>
+              <p class="text-xs text-slate-400 mt-1">Condition: ${condition}</p>
+            </div>
+          </div>
+
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusConfig.badgeColor} ${statusConfig.badgeTextColor} border ${statusConfig.badgeBorderColor}">
+            ${statusConfig.label}
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            ${status === 'Borrowed'
+              ? `<div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-blue-50 border border-blue-200">
+                   <span class="material-symbols-outlined text-sm text-blue-600">person</span>
+                   <span class="text-sm font-medium text-blue-800">${holder || 'Unknown'}</span>
+                 </div>`
+              : `<span class="text-sm text-slate-500 italic">Available for use</span>`
+            }
+          </div>
+
+          <div class="flex gap-2">
+            ${actionButton}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function getStatusConfig(status) {
+    const configs = {
+      'Available': {
+        icon: 'check_circle',
+        bgColor: 'bg-green-50',
+        borderColor: 'border-green-200',
+        iconColor: 'text-green-600',
+        badgeColor: 'bg-green-100',
+        badgeTextColor: 'text-green-800',
+        badgeBorderColor: 'border-green-200',
+        label: 'Available'
+      },
+      'Borrowed': {
+        icon: 'person',
+        bgColor: 'bg-blue-50',
+        borderColor: 'border-blue-200',
+        iconColor: 'text-blue-600',
+        badgeColor: 'bg-blue-100',
+        badgeTextColor: 'text-blue-800',
+        badgeBorderColor: 'border-blue-200',
+        label: 'In Use'
+      },
+      'Broken': {
+        icon: 'build',
+        bgColor: 'bg-orange-50',
+        borderColor: 'border-orange-200',
+        iconColor: 'text-orange-600',
+        badgeColor: 'bg-orange-100',
+        badgeTextColor: 'text-orange-800',
+        badgeBorderColor: 'border-orange-200',
+        label: 'Maintenance'
+      }
+    };
+
+    return configs[status] || configs['Available'];
+  }
+
+  function getActionButton(id, status) {
+    if (status === 'Available') {
+      return `<button onclick="openBorrowModal('${id}')" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                <span class="material-symbols-outlined text-sm">shopping_cart_checkout</span>
+                Borrow
+              </button>`;
+    } else if (status === 'Borrowed') {
+      return `<button onclick="openReturnModal('${id}')" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-black transition-colors">
+                <span class="material-symbols-outlined text-sm">keyboard_return</span>
+                Return
+              </button>`;
+    } else {
+      return `<span class="text-xs text-slate-400 italic">Under maintenance</span>`;
+    }
+  }
+
+  // Tiện ích Inventory
+  function getIconByStatus(status) {
+    const map = {
+      'Available': 'inventory_2',
+      'Borrowed': 'person',
+      'Broken': 'build',
+      'Maintenance': 'engineering'
+    };
+    return map[status] || 'inventory_2';
+  }
+
+  function getStatusStyle(status) {
+    const map = {
+      'Available': 'bg-green-50 text-green-700 border-green-200',
+      'Borrowed': 'bg-blue-50 text-blue-700 border-blue-200',
+      'Broken': 'bg-red-50 text-red-700 border-red-200',
+      'Maintenance': 'bg-yellow-50 text-yellow-700 border-yellow-200'
+    };
+    return map[status] || 'bg-gray-50 text-gray-700 border-gray-200';
+  }
+
+  function getStatusColor(status) {
+    const map = {
+      'Available': { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-600' },
+      'Borrowed': { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600' },
+      'Broken': { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
+      'Maintenance': { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-600' }
+    };
+    return map[status] || { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-600' };
+  }
+
+  function setupInventoryFilters() {
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+
+    // Debounce search input to avoid excessive filtering
+    let searchTimeout;
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          if (window.inventoryData) renderInventory(window.inventoryData);
+        }, 300); // 300ms debounce
+      });
+    }
+
+    if (statusFilter) {
+      statusFilter.addEventListener('change', () => {
+        if (window.inventoryData) renderInventory(window.inventoryData);
+      });
+    }
+  }
+
+  // Toast notification functions
+  function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const toastIcon = document.getElementById('toastIcon');
+    const toastMessage = document.getElementById('toastMessage');
+
+    if (!toast || !toastIcon || !toastMessage) return;
+
+    // Set icon and colors based on type
+    const iconConfigs = {
+      success: '<span class="material-symbols-outlined text-green-600">check_circle</span>',
+      error: '<span class="material-symbols-outlined text-red-600">error</span>',
+      info: '<span class="material-symbols-outlined text-blue-600">info</span>'
+    };
+
+    toastIcon.innerHTML = iconConfigs[type] || iconConfigs.info;
+    toastMessage.textContent = message;
+
+    // Show toast
+    toast.classList.remove('hidden');
+
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+      hideToast();
+    }, 4000);
+  }
+
+  function hideToast() {
+    const toast = document.getElementById('toast');
+    if (toast) {
+      toast.classList.add('hidden');
+    }
+  }
+
+  // Enhanced modal functions with better UX
+  function openAddEquipmentModal() {
+    const modal = document.getElementById('addEquipmentModal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      // Focus first input
+      setTimeout(() => {
+        const firstInput = modal.querySelector('input');
+        if (firstInput) firstInput.focus();
+      }, 100);
+    }
+  }
+
+  function openBorrowModal(id) {
+    const modal = document.getElementById('borrowModal');
+    const selectedEquipId = document.getElementById('selectedEquipId');
+
+    if (modal && selectedEquipId) {
+      selectedEquipId.value = id;
+      modal.classList.remove('hidden');
+
+      // Focus textarea
+      setTimeout(() => {
+        const textarea = modal.querySelector('textarea');
+        if (textarea) textarea.focus();
+      }, 100);
+    }
+  }
+
+  function openReturnModal(id) {
+    const modal = document.getElementById('returnModal');
+    const returnEquipId = document.getElementById('returnEquipId');
+
+    if (modal && returnEquipId) {
+      returnEquipId.value = id;
+      modal.classList.remove('hidden');
+
+      // Focus textarea
+      setTimeout(() => {
+        const textarea = modal.querySelector('textarea');
+        if (textarea) textarea.focus();
+      }, 100);
+    }
+  }
+
+  function closeModal() {
+    const modals = ['addEquipmentModal', 'borrowModal', 'returnModal'];
+    modals.forEach(modalId => {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+    });
+
+    // Clear form data
+    clearFormData();
+  }
+
+  function clearFormData() {
+    const forms = ['addEquipmentForm'];
+    forms.forEach(formId => {
+      const form = document.getElementById(formId);
+      if (form) form.reset();
+    });
+
+    // Clear hidden inputs and textareas
+    const inputs = ['selectedEquipId', 'returnEquipId'];
+    const textareas = ['checkoutCond', 'checkinCond'];
+
+    inputs.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) element.value = '';
+    });
+
+    textareas.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) element.value = '';
+    });
+  }
+
+  // Enhanced submit functions with toast notifications
+  function submitAddEquipment() {
+    if (isSubmitting) return;
+
+    const btn = document.getElementById('addEquipBtn');
+    const name = document.getElementById('equipName').value.trim();
+    const serial = document.getElementById('equipSerial').value.trim();
+    const condition = document.getElementById('equipCondition').value;
+
+    if (!name || !serial) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
+
+    isSubmitting = true;
+    btn.disabled = true;
+    btn.textContent = 'Adding...';
+
+    google.script.run
+      .withSuccessHandler(() => {
+        isSubmitting = false;
+        btn.disabled = false;
+        btn.textContent = 'Add Equipment';
+        closeModal();
+        showToast('Equipment added successfully!', 'success');
+        loadInventory(true); // Force refresh
+      })
+      .withFailureHandler((error) => {
+        isSubmitting = false;
+        btn.disabled = false;
+        btn.textContent = 'Add Equipment';
+        showToast('Failed to add equipment: ' + error.message, 'error');
+      })
+      .addRecord('Inventory', [name, serial, condition, 'Available']);
+  }
+
+  function submitBorrow() {
+    if (isSubmitting) return;
+
+    const btn = document.getElementById('checkoutBtn');
+    const id = document.getElementById('selectedEquipId').value;
+    const cond = document.getElementById('checkoutCond').value.trim();
+
+    if (!cond) {
+      showToast('Please describe the equipment condition', 'error');
+      return;
+    }
+
+    isSubmitting = true;
+    btn.disabled = true;
+    btn.textContent = 'Borrowing...';
+
+    google.script.run
+      .withSuccessHandler((msg) => {
+        isSubmitting = false;
+        btn.disabled = false;
+        btn.textContent = 'Borrow Equipment';
+        closeModal();
+        showToast('Equipment borrowed successfully!', 'success');
+        loadInventory(true); // Force refresh
+      })
+      .withFailureHandler((error) => {
+        isSubmitting = false;
+        btn.disabled = false;
+        btn.textContent = 'Borrow Equipment';
+        showToast('Failed to borrow equipment: ' + error.message, 'error');
+      })
+      .processBorrowing(id, cond);
+  }
+
+  function submitReturn() {
+    if (isSubmitting) return;
+
+    const btn = document.getElementById('checkinBtn');
+    const id = document.getElementById('returnEquipId').value;
+    const cond = document.getElementById('checkinCond').value.trim();
+
+    if (!cond) {
+      showToast('Please describe the return condition', 'error');
+      return;
+    }
+
+    isSubmitting = true;
+    btn.disabled = true;
+    btn.textContent = 'Returning...';
+
+    google.script.run
+      .withSuccessHandler((msg) => {
+        isSubmitting = false;
+        btn.disabled = false;
+        btn.textContent = 'Return Equipment';
+        closeModal();
+        showToast('Equipment returned successfully!', 'success');
+        loadInventory(true); // Force refresh
+      })
+      .withFailureHandler((error) => {
+        isSubmitting = false;
+        btn.disabled = false;
+        btn.textContent = 'Return Equipment';
+        showToast('Failed to return equipment: ' + error.message, 'error');
+      })
+      .returnEquipment(id, cond);
+  }
+
+  // 5. MODULE TASKS (Đã cập nhật tính năng Confirm & Lock)
+  function loadTasks() {
+    google.script.run.withSuccessHandler(renderTasksUI).getTasksData();
+  }
+
+  function renderTasksUI(data) {
+    const tbody = document.getElementById('taskTableBody');
+    const urgentFeed = document.getElementById('urgentTasksFeed');
+    
+    if (!tbody || !urgentFeed) return;
+
+    const pendingCount = data.filter(r => r[6] !== 'Done').length;
+    const urgentCount = data.filter(r => r[4] === 'High' && r[6] !== 'Done').length;
+    
+    if(document.getElementById('statPending')) document.getElementById('statPending').innerText = pendingCount;
+    if(document.getElementById('statUrgent')) document.getElementById('statUrgent').innerText = urgentCount;
+
+    tbody.innerHTML = data.map(row => {
+      const priorityConfig = getPriorityConfig(row[4]);
+      const statusConfig = getStatusConfig(row[6]);
+      const deadline = new Date(row[5]).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit'});
+      
+      // LOGIC NÚT CONFIRM Ở CỘT CUỐI
+      const actionHtml = row[6] === 'Done' 
+        ? `<span class="flex items-center justify-end gap-1 text-emerald-600 text-[10px] font-bold uppercase"><span class="material-symbols-outlined text-sm">check_circle</span> Completed</span>` 
+        : `<button onclick="confirmTask('${row[0]}')" class="bg-slate-900 hover:bg-emerald-600 text-white text-[10px] font-bold px-3 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-1 float-right">
+             <span class="material-symbols-outlined text-[14px]">check</span> Confirm
+           </button>`;
+
+      return `
+        <tr class="hover:bg-slate-50 transition-colors group cursor-pointer">
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="size-9 rounded-lg bg-slate-100 flex items-center justify-center border border-slate-200 group-hover:bg-white group-hover:shadow-sm transition-all">
+                <span class="material-symbols-outlined text-sm text-slate-600">task_alt</span>
+              </div>
+              <div>
+                <span class="block text-sm font-semibold text-slate-900">${row[2]}</span>
+                <span class="block text-[10px] text-slate-400 font-mono">${row[0]}</span>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-sm text-slate-600 font-medium">${row[1]}</td>
+          <td class="px-6 py-4">
+             <div class="flex items-center gap-2">
+               <div class="size-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] font-bold border border-white shadow-sm">${row[3].charAt(0)}</div>
+               <span class="text-xs font-medium text-slate-700">${row[3]}</span>
+             </div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-1.5">
+              <span class="size-1.5 rounded-full ${priorityConfig.dotColor} shadow-[0_0_8px_rgba(0,0,0,0.2)]"></span>
+              <span class="text-xs font-medium text-slate-700">${row[4]}</span>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-center">
+            <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${deadline}</span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            ${actionHtml}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const urgentTasks = data.filter(r => r[4] === 'High' && r[6] !== 'Done');
+    urgentFeed.innerHTML = urgentTasks.map(row => `
+      <div class="bg-white border border-slate-200 p-5 rounded-xl space-y-3 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:border-red-200 transition-colors">
+        <div class="flex items-start gap-3">
+          <div class="size-10 rounded-lg bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+             <span class="material-symbols-outlined text-lg">priority_high</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold truncate text-slate-900">${row[3]}</p>
+            <p class="text-[10px] text-slate-500">Assignee</p>
+          </div>
+        </div>
+        <div>
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Critical Task</p>
+          <p class="text-sm font-medium text-slate-800 leading-tight">${row[2]}</p>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button class="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded-lg transition-colors shadow-sm">Follow Up</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function confirmTask(taskId) {
+    if(!confirm("Xác nhận hoàn thành? Nhân sự sẽ được mở khóa.")) return;
+    google.script.run.withSuccessHandler(() => { loadTasks(); }).confirmTaskCompletion(taskId);
+  }
+
+  function getPriorityConfig(priority) {
+    if (priority === 'High') return { dotColor: 'bg-red-500' };
+    if (priority === 'Medium') return { dotColor: 'bg-amber-500' };
+    return { dotColor: 'bg-emerald-500' };
+  }
+
+  function getStatusConfig(status) {
+    if (status === 'Done') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (status === 'In Progress') return 'bg-blue-50 text-blue-700 border-blue-200';
+    return 'bg-slate-50 text-slate-600 border-slate-200';
+  }
+
+  function loadUsers() {
+    google.script.run.withSuccessHandler(data => {
+      document.getElementById('userTableBody').innerHTML = data.map(row => `
+        <tr class="border-b last:border-0 hover:bg-slate-50 transition">
+          <td class="p-5 font-bold">${row[1]}</td>
+          <td class="p-5 text-slate-500 text-xs">${row[3]}</td>
+          <td class="p-5"><span class="px-2 py-1 rounded text-[10px] font-black uppercase bg-emerald-50 text-emerald-700">${row[4]}</span></td>
+          <td class="p-5"><div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full ${row[5] === 'Active' ? 'bg-green-500' : 'bg-slate-300'}"></div><span class="text-[10px] font-bold uppercase">${row[5]}</span></div></td>
+        </tr>`).join('');
+    }).getUsersData();
+  }
+
+  // 6. FORM ADD & SUBMIT (Đã cập nhật logic kiểm tra khóa)
+  function submitNewRecord() {
+    if (isSubmitting) return;
+    const btn = document.getElementById('submitBtn');
+    // Lấy data từ các field, f6 mặc định là Todo hoặc Active
+    const data = [1,2,3,4,5,6].map(i => document.getElementById('f'+i)?.value || "");
+    
+    // Validate cơ bản
+    if (data[0] === "" || data[1] === "" || data[2] === "") return alert("Vui lòng điền đủ thông tin!");
+    
+    isSubmitting = true; btn.disabled = true; btn.innerText = "Processing...";
+
+    // Nếu là trang Tasks -> Gọi hàm có khóa an toàn
+    if (currentPage === 'Tasks') {
+        google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleError).addTaskWithLock(data);
+    } else {
+        google.script.run.withSuccessHandler(handleSuccess).addRecord(currentPage, data);
+    }
+    
+    function handleSuccess(msg) {
+        isSubmitting = false; btn.disabled = false; btn.innerText = "Save Record";
+        alert(msg); closeAddModal(); loadPage(currentPage);
+    }
+
+    function handleError(err) {
+        isSubmitting = false; btn.disabled = false; btn.innerText = "Save Record";
+        alert("LỖI: " + err.message);
+    }
+  }
+
+  function openAddModal() { document.getElementById('addModal').classList.remove('hidden'); generateFields(); }
+  function closeAddModal() { document.getElementById('addModal').classList.add('hidden'); }
+  function closeModal() { document.getElementById('borrowModal').classList.add('hidden'); }
+
+  function generateFields() {
+    const fields = document.getElementById('modalFields');
+    const title = document.getElementById('modalTitle');
+    const s = "w-full border-slate-200 border p-4 rounded-[20px] bg-slate-50 text-sm focus:bg-white transition-all outline-none focus:ring-4 focus:ring-emerald-500/10 font-bold mb-3";
+    
+    fields.innerHTML = '';
+    
+    if (currentPage === 'Tasks') {
+      title.innerText = "New Project Task";
+      // Tạo khung input & Select box cho nhân sự
+      fields.innerHTML = `
+        <input id="f1" class="${s}" placeholder="Project ID / Context">
+        <input id="f2" class="${s}" placeholder="Task Detail">
+        <div class="relative mb-3">
+           <select id="f3" class="${s} appearance-none cursor-pointer">
+              <option value="" disabled selected>Loading staff list...</option>
+           </select>
+           <div class="absolute right-4 top-4 text-slate-400 pointer-events-none">▼</div>
+        </div>
+        <select id="f4" class="${s}">
+          <option value="High">Priority: High</option>
+          <option value="Medium" selected>Priority: Medium</option>
+          <option value="Low">Priority: Low</option>
+        </select>
+        <input id="f5" type="date" class="${s}">
+        <input id="f6" value="Todo" type="hidden">
+      `;
+      // Gọi server lấy danh sách nhân sự Rảnh/Bận
+      google.script.run.withSuccessHandler(populateAssigneeSelect).getStaffAvailability();
+
+    } else if (currentPage === 'Inventory') {
+      title.innerText = "Add New Asset";
+      fields.innerHTML = `<input id="f1" class="${s}" placeholder="Asset Name"><input id="f2" class="${s}" placeholder="Serial S/N"><input id="f3" class="${s}" placeholder="Category"><input id="f4" value="Available" class="${s}" readonly>`;
+    } else if (currentPage === 'Users') {
+      title.innerText = "Onboard Personnel";
+      fields.innerHTML = `<input id="f1" class="${s}" placeholder="Full Name"><input id="f2" class="${s}" placeholder="Email Address"><input id="f3" class="${s}" placeholder="Job Role"><input id="f4" class="${s}" placeholder="Skills"><input id="f5" value="Active" class="${s}" readonly>`;
+    }
+  }
+
+  // Hàm điền dữ liệu vào Dropdown nhân sự
+  // --- THAY THẾ HÀM populateAssigneeSelect CŨ ---
+
+function populateAssigneeSelect(users) {
+  const select = document.getElementById('f3');
+  if (!select) return;
+
+  let html = `<option value="" disabled selected>-- Chọn nhân sự thực hiện --</option>`;
+  
+  users.forEach(u => {
+    if (u.isBusy) {
+      // Logic hiển thị chi tiết khi bận
+      const details = u.busyDetails;
+      const dayText = details.daysLeft >= 0 ? `${details.daysLeft} ngày nữa` : `Quá hạn ${Math.abs(details.daysLeft)} ngày`;
+      
+      // Format text hiển thị trong dropdown
+      // Ví dụ: 🔴 Vinh (BẬN: Làm báo cáo | Hạn: 2 ngày nữa | Giao bởi: Sơn)
+      const busyText = `🔴 ${u.name} (BẬN: ${details.taskName} | Hạn: ${dayText} | Giao bởi: ${details.assigner})`;
+      
+      html += `<option value="${u.name}" disabled class="bg-slate-100 text-slate-400 font-medium italic">${busyText}</option>`;
+    } else {
+      // Người rảnh
+      html += `<option value="${u.name}" class="text-slate-900 font-bold">🟢 ${u.name} - ${u.role}</option>`;
+    }
+  });
+  
+  select.innerHTML = html;
+}
+
+// WEEKLY SYNC FUNCTIONS
+function openPostModal() {
+  document.getElementById('postModal').classList.remove('hidden');
+  document.getElementById('postContent').focus();
+}
+
+function closePostModal() {
+  document.getElementById('postModal').classList.add('hidden');
+  document.getElementById('postContent').value = '';
+  document.getElementById('pinPost').checked = false;
+}
+
+function submitPost(event) {
+  event.preventDefault();
+  const content = document.getElementById('postContent').value.trim();
+  const isPinned = document.getElementById('pinPost').checked;
+  
+  if (!content) return;
+  
+  const user = getCurrentUserInfo ? getCurrentUserInfo() : { name: 'User' };
+  
+  google.script.run.withSuccessHandler(() => {
+    closePostModal();
+    loadDashboardData(); // Reload to show new post
+  }).postWeeklyUpdate(content, isPinned, user.name);
+}
+
+function togglePin(postId) {
+  google.script.run.withSuccessHandler(() => {
+    loadDashboardData();
+  }).togglePostPin(postId);
+}
+
+function markPostDone(postId) {
+  google.script.run.withSuccessHandler(() => {
+    loadDashboardData();
+  }).markPostAsDone(postId);
+}
+
+// =============================================================================
+// 8. PROJECT MANAGEMENT FUNCTIONS
+// =============================================================================
+
+function loadProjects() {
+  google.script.run
+    .withSuccessHandler(data => {
+      renderProjects(data);
+    })
+    .withFailureHandler(error => {
+      console.error('Failed to load projects:', error);
+      showToast('Failed to load projects: ' + error.message, 'error');
+    })
+    .getProjectsData();
+}
+
+function renderProjects(data) {
+  const container = document.getElementById('projectsContainer');
+  if (!container) return;
+
+  updateProjectStats(data);
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full text-center py-12">
+        <div class="mx-auto w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+          <span class="material-symbols-outlined text-slate-400 text-2xl">work</span>
+        </div>
+        <h3 class="text-lg font-medium text-slate-900 mb-2">No projects yet</h3>
+        <p class="text-slate-600 mb-6">Get started by creating your first project</p>
+        <button onclick="openAddProjectModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <span class="material-symbols-outlined text-sm">add</span>
+          Add Project
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = data.map(row => createProjectCard(row)).join('');
+}
+
+function updateProjectStats(data) {
+  const now = new Date();
+  let total = data.length;
+  let active = 0;
+  let upcoming = 0;
+  let totalBudget = 0;
+
+  data.forEach(row => {
+    const [id, title, budget, startDate, endDate, leadId] = row;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    totalBudget += parseFloat(budget) || 0;
+
+    if (now < start) {
+      upcoming++;
+    } else if (now <= end) {
+      active++;
+    }
+  });
+
+  document.getElementById('totalProjects').textContent = total;
+  document.getElementById('activeProjects').textContent = active;
+  document.getElementById('upcomingProjects').textContent = upcoming;
+  document.getElementById('totalBudget').textContent = '$' + totalBudget.toLocaleString();
+}
+
+function createProjectCard(row) {
+  const [id, title, budget, startDate, endDate, leadId] = row;
+  const now = new Date();
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  let status, statusColor, statusText;
+  if (now < start) {
+    status = 'upcoming';
+    statusColor = 'bg-amber-100 text-amber-800 border-amber-200';
+    statusText = 'Upcoming';
+  } else if (now <= end) {
+    status = 'active';
+    statusColor = 'bg-green-100 text-green-800 border-green-200';
+    statusText = 'Active';
+  } else {
+    status = 'completed';
+    statusColor = 'bg-slate-100 text-slate-800 border-slate-200';
+    statusText = 'Completed';
+  }
+
+  const progress = calculateProjectProgress(start, end, now);
+  const budgetFormatted = '$' + parseFloat(budget).toLocaleString();
+
+  return `
+    <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-200 group cursor-pointer" onclick="openProjectDetails('${id}')">
+      <div class="flex items-start justify-between mb-4">
+        <div class="flex-1">
+          <h3 class="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors mb-2">${title}</h3>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColor} border">
+              ${statusText}
+            </span>
+            <span class="text-sm text-slate-500">${budgetFormatted}</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="text-sm text-slate-500">${start.toLocaleDateString()}</p>
+          <p class="text-sm text-slate-500">to</p>
+          <p class="text-sm text-slate-500">${end.toLocaleDateString()}</p>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex justify-between text-sm">
+          <span class="text-slate-600">Progress</span>
+          <span class="font-medium">${progress}%</span>
+        </div>
+        <div class="w-full bg-slate-200 rounded-full h-2">
+          <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function calculateProjectProgress(start, end, now) {
+  if (now < start) return 0;
+  if (now > end) return 100;
+
+  const totalDuration = end - start;
+  const elapsed = now - start;
+  return Math.round((elapsed / totalDuration) * 100);
+}
+
+function openAddProjectModal() {
+  const modal = document.getElementById('addProjectModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    // Load project leads
+    google.script.run
+      .withSuccessHandler(leads => {
+        const select = document.getElementById('projectLead');
+        if (select) {
+          select.innerHTML = '<option value="">Select project lead...</option>' +
+            leads.map(lead => `<option value="${lead[0]}">${lead[1]}</option>`).join('');
+        }
+      })
+      .getUsersData();
+  }
+}
+
+function closeProjectModal() {
+  const modal = document.getElementById('addProjectModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    clearProjectForm();
+  }
+}
+
+function clearProjectForm() {
+  const form = document.getElementById('addProjectForm');
+  if (form) form.reset();
+}
+
+function submitAddProject(event) {
+  event.preventDefault();
+
+  const title = document.getElementById('projectTitle').value.trim();
+  const budget = document.getElementById('projectBudget').value;
+  const startDate = document.getElementById('projectStartDate').value;
+  const endDate = document.getElementById('projectEndDate').value;
+  const leadId = document.getElementById('projectLead').value;
+
+  if (!title || !budget || !startDate || !endDate || !leadId) {
+    showToast('Please fill in all required fields', 'error');
+    return;
+  }
+
+  // Additional client-side validation
+  const bnum = Number(budget);
+  if (isNaN(bnum) || bnum <= 0) {
+    showToast('Budget must be a positive number', 'error');
+    return;
+  }
+  const s = new Date(startDate);
+  const e = new Date(endDate);
+  if (isNaN(s.getTime()) || isNaN(e.getTime())) {
+    showToast('Invalid start or end date', 'error');
+    return;
+  }
+  if (s > e) {
+    showToast('Start date must be before or equal to End date', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('addProjectBtn');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+
+  google.script.run
+    .withSuccessHandler(() => {
+      btn.disabled = false;
+      btn.textContent = 'Create Project';
+      closeProjectModal();
+      showToast('Project created successfully!', 'success');
+      loadProjects();
+    })
+    .withFailureHandler(error => {
+      btn.disabled = false;
+      btn.textContent = 'Create Project';
+      showToast('Failed to create project: ' + error.message, 'error');
+    })
+    .addProject([title, budget, startDate, endDate, leadId]);
+}
+
+function openProjectDetails(projectId) {
+  google.script.run
+    .withSuccessHandler(project => {
+      const modal = document.getElementById('projectDetailsModal');
+      const title = document.getElementById('projectDetailTitle');
+      const content = document.getElementById('projectDetailsContent');
+
+      if (modal && title && content) {
+        title.textContent = project.title;
+        content.innerHTML = `
+          <div class="space-y-6">
+            <div class="grid grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-bold text-slate-900 mb-2">Project Details</h4>
+                <div class="space-y-2 text-sm">
+                  <p><span class="font-medium">ID:</span> ${project.id}</p>
+                  <p><span class="font-medium">Title:</span> ${project.title}</p>
+                  <p><span class="font-medium">Budget:</span> $${parseFloat(project.budget).toLocaleString()}</p>
+                  <p><span class="font-medium">Start Date:</span> ${new Date(project.startDate).toLocaleDateString()}</p>
+                  <p><span class="font-medium">End Date:</span> ${new Date(project.endDate).toLocaleDateString()}</p>
+                  <p><span class="font-medium">Project Lead:</span> ${project.leadName || 'Unknown'}</p>
+                </div>
+              </div>
+              <div>
+                <h4 class="font-bold text-slate-900 mb-2">Progress</h4>
+                <div class="space-y-3">
+                  <div class="flex justify-between text-sm">
+                    <span>Completion</span>
+                    <span class="font-medium">${project.progress}%</span>
+                  </div>
+                  <div class="w-full bg-slate-200 rounded-full h-3">
+                    <div class="bg-blue-600 h-3 rounded-full" style="width: ${project.progress}%"></div>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-2">${project.status}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        modal.classList.remove('hidden');
+      }
+    })
+    .getProjectDetails(projectId);
+}
+
+function closeProjectDetailsModal() {
+  const modal = document.getElementById('projectDetailsModal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+</script>
