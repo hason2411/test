@@ -14,14 +14,12 @@
  */
 function doGet() {
   try {
-    // Ensure Users sheet is synchronized on app load
+    // ensure Users sheet has at least coordinator account for testing
     try {
       syncUsersSheet();
-    } catch (syncErr) {
-      Logger.log('Warning: syncUsersSheet failed: ' + syncErr.toString());
-      // Continue even if sync fails
+    } catch (e) {
+      Logger.log('syncUsersSheet failed: ' + e.toString());
     }
-    
     return HtmlService.createTemplateFromFile('Index').evaluate()
       .setTitle('CTNC Strategic Portal')
       .addMetaTag('viewport', 'width=device-width, initial-scale=1')
@@ -86,56 +84,6 @@ function getSpreadsheet() {
  */
 function isDevMode() {
   try { return PropertiesService.getScriptProperties().getProperty('DEV_MODE') === 'true'; } catch (e) { return false; }
-}
-
-/**
- * Synchronizes/initializes the Users sheet with proper data.
- * Ensures user son.hatri@ctnc.org.vn has Coordinator role.
- * @returns {string} Status message
- */
-function syncUsersSheet() {
-  try {
-    const ss = getSpreadsheet();
-    let sheet = ss.getSheetByName('Users');
-    
-    // Create sheet if not exists
-    if (!sheet) {
-      sheet = ss.insertSheet('Users');
-      sheet.appendRow(['id', 'name', 'email', 'role', 'department', 'status', 'username']);
-    }
-    
-    // Get existing data
-    const data = sheet.getDataRange().getValues();
-    
-    // Check if son.hatri@ctnc.org.vn already exists and has Coordinator role
-    let foundUserRow = -1;
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][2] === 'son.hatri@ctnc.org.vn') {
-        foundUserRow = i;
-        break;
-      }
-    }
-    
-    // If user exists but role is not Coordinator, update it
-    if (foundUserRow > 0) {
-      const currentRole = data[foundUserRow][3] || '';
-      if (currentRole !== 'Coordinator') {
-        sheet.getRange(foundUserRow + 1, 4).setValue('Coordinator'); // Column D (role)
-        clearCache('usersData');
-        return 'Updated existing user role to Coordinator';
-      }
-      return 'User already has Coordinator role';
-    }
-    
-    // If user doesn't exist, add as Coordinator
-    const id = "USR-" + Utilities.formatDate(new Date(), "GMT+7", "HHmmss");
-    sheet.appendRow([id, 'Ha Tri Son', 'son.hatri@ctnc.org.vn', 'Coordinator', 'Operations', 'Active', 'son.hatri']);
-    clearCache('usersData');
-    return 'Added new Coordinator user: son.hatri@ctnc.org.vn';
-  } catch (error) {
-    Logger.log('Error in syncUsersSheet: ' + error.toString());
-    throw new Error('Failed to sync Users sheet: ' + error.message);
-  }
 }
 
 /**
@@ -549,6 +497,37 @@ function getTasksData() {
  */
 function getUsersData() {
   return getCachedData('usersData', () => getSpreadsheet().getSheetByName('Users').getDataRange().getValues().slice(1));
+}
+
+/**
+ * Ensure Users sheet exists and includes a coordinator account for testing.
+ * Adds sample rows when missing or updates existing entry.
+ * @returns {boolean}
+ */
+function syncUsersSheet() {
+  const ss = getSpreadsheet();
+  let sheet = ss.getSheetByName('Users');
+  if (!sheet) {
+    sheet = ss.insertSheet('Users');
+    sheet.appendRow(['id', 'name', 'email', 'role', 'department', 'status', 'username']);
+  }
+  const data = sheet.getDataRange().getValues();
+  let found = false;
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][2] === 'son.hatri@ctnc.org.vn') {
+      found = true;
+      // ensure role is Coordinator
+      if (data[i][3] !== 'Coordinator') {
+        sheet.getRange(i + 1, 4).setValue('Coordinator');
+      }
+      break;
+    }
+  }
+  if (!found) {
+    sheet.appendRow(['USR-' + Utilities.getUuid().substring(0,8), 'Ha Tri Son', 'son.hatri@ctnc.org.vn', 'Coordinator', '', 'Active', 'son.hatri']);
+  }
+  clearCache('usersData');
+  return true;
 }
 
 /**
