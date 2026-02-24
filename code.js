@@ -1063,11 +1063,23 @@ function linkInvoiceToProject(projectId, invoiceId, costAllocation) {
     
     // Validate invoice and project exist
     const reports = getFinancialReports();
-    const invoice = reports.find(r => r[0] === invoiceId);
+    const invoice = reports.find(r => {
+      try {
+        return String(r[0]) === String(invoiceId);
+      } catch (e) {
+        return false;
+      }
+    });
     if (!invoice) throw new Error('Invoice not found');
     
     const projects = getProjectsData();
-    const project = projects.find(p => p[0] === projectId);
+    const project = projects.find(p => {
+      try {
+        return String(p[0]) === String(projectId);
+      } catch (e) {
+        return false;
+      }
+    });
     if (!project) throw new Error('Project not found');
     
     const linkId = "LNK-" + Utilities.formatDate(new Date(), "GMT+7", "HHmmss");
@@ -1152,11 +1164,15 @@ function extractInvoiceFromProject(linkId) {
     
     const data = sheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
-      if (data[i][0] === linkId) {
-        sheet.deleteRow(i + 1);
-        logActivity('InvoiceExtract', `Extracted invoice from project (Link: ${linkId})`, currentUser.name);
-        clearCache('invoiceProjectsData');
-        return "Invoice extracted from project successfully";
+      try {
+        if (String(data[i][0]) === String(linkId)) {
+          sheet.deleteRow(i + 1);
+          logActivity('InvoiceExtract', `Extracted invoice from project (Link: ${linkId})`, currentUser.name);
+          clearCache('invoiceProjectsData');
+          return "Invoice extracted from project successfully";
+        }
+      } catch (e) {
+        // Continue to next row
       }
     }
     
@@ -1193,7 +1209,13 @@ function getInvoiceSummary() {
     const projects = getProjectsData();
     
     return reports.map(report => {
-      const invoiceLinks = links.filter(l => l[1] === report[0]);
+      const invoiceLinks = links.filter(l => {
+        try {
+          return String(l[1]) === String(report[0]);
+        } catch (e) {
+          return false;
+        }
+      });
       const totalAllocated = invoiceLinks.reduce((sum, link) => sum + (Number(link[3]) || 0), 0);
       
       return {
@@ -1202,7 +1224,13 @@ function getInvoiceSummary() {
         vendor: report[2],
         totalAmount: Number(report[3]),
         linkedProjects: invoiceLinks.map(link => {
-          const proj = projects.find(p => p[0] === link[2]);
+          const proj = projects.find(p => {
+        try {
+          return String(p[0]) === String(link[2]);
+        } catch (e) {
+          return false;
+        }
+      });
           return {
             projectId: link[2],
             projectName: proj ? proj[1] : 'Unknown',
@@ -1308,7 +1336,13 @@ function bulkLinkInvoicesToProject(projectId, allocations) {
     
     // Validate project exists
     const projects = getProjectsData();
-    const project = projects.find(p => p[0] === projectId);
+    const project = projects.find(p => {
+      try {
+        return String(p[0]) === String(projectId);
+      } catch (e) {
+        return false;
+      }
+    });
     if (!project) throw new Error('Project not found');
     
     let successCount = 0;
