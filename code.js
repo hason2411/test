@@ -976,3 +976,231 @@ function markPostAsDone(postId) {
   
   clearCache('weeklyPostsData');
 }
+
+// =============================================================================
+// 9. FINANCIAL REPORTS MANAGEMENT (INVOICE & PROJECT LINKING)
+// =============================================================================
+
+/**
+ * Gets all financial reports (invoices).
+ * @returns {Array} Array of financial report data.
+ */
+function getFinancialReports() {
+  try {
+    const ss = getSpreadsheet();
+    let sheet = ss.getSheetByName('FinancialReports');
+    
+    if (!sheet) {
+      sheet = ss.insertSheet('FinancialReports');
+      // Headers: id, invoice_number, vendor, amount, date, category, description, status
+      sheet.appendRow(['id', 'invoice_number', 'vendor', 'amount', 'date', 'category', 'description', 'status']);
+    }
+    
+    return getCachedData('financialReportsData', () => sheet.getDataRange().getValues().slice(1));
+  } catch (error) {
+    Logger.log('Error in getFinancialReports: ' + error.toString());
+    return [];
+  }
+}
+
+/**
+ * Adds a new financial report (invoice).
+ * @param {Array} reportData - [invoice_number, vendor, amount, date, category, description, status].
+ * @returns {string} Success message with ID.
+ */
+function addFinancialReport(reportData) {
+  try {
+    const currentUser = getCurrentUserInfo();
+    requireRole('Coordinator');
+    
+    const ss = getSpreadsheet();
+    let sheet = ss.getSheetByName('FinancialReports');
+    
+    if (!sheet) {
+      sheet = ss.insertSheet('FinancialReports');
+      sheet.appendRow(['id', 'invoice_number', 'vendor', 'amount', 'date', 'category', 'description', 'status']);
+    }
+    
+    const id = "INV-" + Utilities.formatDate(new Date(), "GMT+7", "HHmmss");
+    const [invoiceNum, vendor, amount, date, category, description, status] = reportData;
+    
+    if (!invoiceNum || !vendor || !amount) {
+      throw new Error('Invoice number, vendor, and amount are required');
+    }
+    
+    sheet.appendRow([id, invoiceNum, vendor, Number(amount) || 0, date, category, description, status || 'Pending']);
+    
+    logActivity('FinancialReport', `Added invoice: ${invoiceNum} from ${vendor}`, currentUser.name);
+    clearCache('financialReportsData');
+    
+    return id; // Return the new invoice ID for direct linking
+  } catch (error) {
+    Logger.log('Error in addFinancialReport: ' + error.toString());
+    throw new Error('Failed to add financial report: ' + error.message);
+  }
+}
+
+/**
+ * Links an invoice to a project with cost allocation.
+ * @param {string} projectId - The project ID.
+ * @param {string} invoiceId - The invoice ID.
+ * @param {number} costAllocation - The cost allocated to this project.
+ * @returns {string} Success message.
+ */
+function linkInvoiceToProject(projectId, invoiceId, costAllocation) {
+  try {
+    const currentUser = getCurrentUserInfo();
+    requireRole('Coordinator');
+    
+    const ss = getSpreadsheet();
+    let sheet = ss.getSheetByName('InvoiceProjects');
+    
+    if (!sheet) {
+      sheet = ss.insertSheet('InvoiceProjects');
+      // Headers: id, invoice_id, project_id, cost_allocation, linked_date
+      sheet.appendRow(['id', 'invoice_id', 'project_id', 'cost_allocation', 'linked_date']);
+    }
+    
+    // Validate invoice and project exist
+    const reports = getFinancialReports();
+    const invoice = reports.find(r => r[0] === invoiceId);
+    if (!invoice) throw new Error('Invoice not found');
+    
+    const projects = getProjectsData();
+    const project = projects.find(p => p[0] === projectId);
+    if (!project) throw new Error('Project not found');
+    
+    const linkId = "LNK-" + Utilities.formatDate(new Date(), "GMT+7", "HHmmss");
+    sheet.appendRow([linkId, invoiceId, projectId, Number(costAllocation) || 0, new Date()]);
+    
+    logActivity('InvoiceLink', `Linked invoice ${invoice[1]} to project ${project[1]} ($${costAllocation})`, currentUser.name);
+    clearCache('invoiceProjectsData');
+    
+    return "Invoice linked to project successfully";
+  } catch (error) {
+    Logger.log('Error in linkInvoiceToProject: ' + error.toString());
+    throw new Error('Failed to link invoice to project: ' + error.message);
+  }
+}
+
+/**
+ * Gets all financial reports linked to a specific project.
+ * @param {string} projectId - The project ID.
+ * @returns {Array} Array of financial reports for this project.
+ */
+function getProjectFinancialReports(projectId) {
+  try {
+    const ss = getSpreadsheet();
+    let linkSheet = ss.getSheetByName('InvoiceProjects');
+    
+    if (!linkSheet) return [];
+    
+    const links = linkSheet.getDataRange().getValues().slice(1);
+    const reports = getFinancialReports();
+    
+    // Find all invoices linked to this project
+    const projectInvoices = links
+      .filter(link => link[2] === projectId)
+      .map(link => {
+        const invoice = reports.find(r => r[0] === link[1]);
+        return {
+          linkId: link[0],
+          invoiceId: link[1],
+          projectId: link[2],
+          costAllocation: link[3],
+          linkedDate: link[4],
+          invoice: invoice || {}
+        };
+      });
+    
+    return projectInvoices;
+  } catch (error) {
+    Logger.log('Error in getProjectFinancialReports: ' + error.toString());
+    return [];
+  }
+}
+
+/**
+ * Extracts (removes) an invoice from a project.
+ * @param {string} linkId - The link ID to remove.
+ * @returns {string} Success message.
+ */
+function extractInvoiceFromProject(linkId) {
+  try {
+    const currentUser = getCurrentUserInfo();
+    requireRole('Coordinator');
+    
+    const ss = getSpreadsheet();
+    let sheet = ss.getSheetByName('InvoiceProjects');
+    
+    if (!sheet) throw new Error('InvoiceProjects sheet not found');
+    
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === linkId) {
+        sheet.deleteRow(i + 1);
+        logActivity('InvoiceExtract', `Extracted invoice from project (Link: ${linkId})`, currentUser.name);
+        clearCache('invoiceProjectsData');
+        return "Invoice extracted from project successfully";
+      }
+    }
+    
+    throw new Error('Link not found');
+  } catch (error) {
+    Logger.log('Error in extractInvoiceFromProject: ' + error.toString());
+    throw new Error('Failed to extract invoice: ' + error.message);
+  }
+}
+
+/**
+ * Gets summary of all invoices and which projects they're linked to.
+ * @returns {Array} Array of invoice summaries with project allocations.
+ */
+function getInvoiceSummary() {
+  try {
+    const reports = getFinancialReports();
+    const ss = getSpreadsheet();
+    let linkSheet = ss.getSheetByName('InvoiceProjects');
+    
+    if (!linkSheet) {
+      return reports.map(r => ({
+        invoiceId: r[0],
+        invoiceNumber: r[1],
+        vendor: r[2],
+        totalAmount: r[3],
+        projectedProjects: 0,
+        allocatedAmount: 0,
+        remainingAmount: r[3]
+      }));
+    }
+    
+    const links = linkSheet.getDataRange().getValues().slice(1);
+    const projects = getProjectsData();
+    
+    return reports.map(report => {
+      const invoiceLinks = links.filter(l => l[1] === report[0]);
+      const totalAllocated = invoiceLinks.reduce((sum, link) => sum + (Number(link[3]) || 0), 0);
+      
+      return {
+        invoiceId: report[0],
+        invoiceNumber: report[1],
+        vendor: report[2],
+        totalAmount: Number(report[3]),
+        linkedProjects: invoiceLinks.map(link => {
+          const proj = projects.find(p => p[0] === link[2]);
+          return {
+            projectId: link[2],
+            projectName: proj ? proj[1] : 'Unknown',
+            allocation: Number(link[3])
+          };
+        }),
+        totalAllocated: totalAllocated,
+        remainingAmount: Number(report[3]) - totalAllocated,
+        status: report[7] || 'Pending'
+      };
+    });
+  } catch (error) {
+    Logger.log('Error in getInvoiceSummary: ' + error.toString());
+    return [];
+  }
+}
