@@ -1327,3 +1327,95 @@ function bulkLinkInvoicesToProject(projectId, allocations) {
     throw new Error('Failed to bulk link invoices: ' + error.message);
   }
 }
+
+/**
+ * Exports invoice summary as CSV format.
+ * @returns {string} CSV content.
+ */
+function exportInvoicesAsCSV() {
+  try {
+    const summary = getInvoiceSummary();
+    
+    // Header
+    let csv = 'Invoice ID,Invoice Number,Vendor,Total Amount,Linked Projects,Allocated Amount,Remaining Amount,Status\n';
+    
+    // Rows
+    summary.forEach(invoice => {
+      const linkedProjects = invoice.linkedProjects
+        .map(p => `${p.projectName}($${p.allocation})`)
+        .join('; ');
+      
+      const row = [
+        invoice.invoiceId,
+        invoice.invoiceNumber,
+        invoice.vendor,
+        invoice.totalAmount,
+        linkedProjects || 'None',
+        invoice.totalAllocated,
+        invoice.remainingAmount,
+        invoice.status
+      ];
+      
+      // Escape fields with commas/quotes
+      csv += row.map(field => {
+        const str = String(field);
+        if (str.includes(',') || str.includes('"')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      }).join(',') + '\n';
+    });
+    
+    return csv;
+  } catch (error) {
+    Logger.log('Error in exportInvoicesAsCSV: ' + error.toString());
+    throw new Error('Failed to export invoices: ' + error.message);
+  }
+}
+
+/**
+ * Exports project financial reports as CSV.
+ * @param {string} projectId - The project ID.
+ * @returns {string} CSV content.
+ */
+function exportProjectFinancialReportsAsCSV(projectId) {
+  try {
+    const projectReports = getProjectFinancialReports(projectId);
+    const projects = getProjectsData();
+    const project = projects.find(p => p[0] === projectId);
+    
+    // Header with project info
+    let csv = `Financial Report for Project: ${project ? project[1] : 'Unknown'}\n`;
+    csv += `Export Date: ${Utilities.formatDate(new Date(), 'GMT+7', 'yyyy-MM-dd HH:mm:ss')}\n\n`;
+    
+    // Table header
+    csv += 'Invoice ID,Invoice Number,Vendor,Amount,Category,Cost Allocation,Linked Date\n';
+    
+    // Rows
+    projectReports.forEach(report => {
+      const inv = report.invoice || {};
+      const row = [
+        report.invoiceId,
+        inv[1] || '',
+        inv[2] || '',
+        inv[3] || 0,
+        inv[5] || '',
+        report.costAllocation,
+        report.linkedDate ? Utilities.formatDate(new Date(report.linkedDate), 'GMT+7', 'yyyy-MM-dd') : ''
+      ];
+      
+      csv += row.map(field => {
+        const str = String(field);
+        if (str.includes(',') || str.includes('"')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      }).join(',') + '\n';
+    });
+    
+    return csv;
+  } catch (error) {
+    Logger.log('Error in exportProjectFinancialReportsAsCSV: ' + error.toString());
+    throw new Error('Failed to export project reports: ' + error.message);
+  }
+}

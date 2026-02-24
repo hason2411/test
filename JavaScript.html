@@ -1998,4 +1998,86 @@ function downloadInvoiceTemplate() {
   link.click();
   document.body.removeChild(link);
 }
+
+/**
+ * Downloads invoice summary as CSV file
+ */
+function downloadInvoicesSummaryCSV() {
+  const btn = document.querySelector('[onclick="downloadInvoicesSummaryCSV()"]');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Downloading...';
+  }
+  
+  google.script.run.withSuccessHandler(csvContent => {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Download as CSV';
+    }
+    
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    const timestamp = Utilities.formatDate(new Date(), 'GMT+7', 'yyyyMMdd_HHmmss');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `invoice_summary_${timestamp}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }).withFailureHandler(error => {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Download as CSV';
+    }
+    alert('Error downloading file: ' + error.message);
+  }).exportInvoicesAsCSV();
+}
+
+/**
+ * Downloads project financial reports as CSV
+ */
+function downloadProjectFinancialReportsCSV() {
+  const projectId = window.selectedProjectId;
+  if (!projectId) {
+    alert('No project selected');
+    return;
+  }
+  
+  const btn = document.querySelector('[onclick="downloadProjectFinancialReportsCSV()"]');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Downloading...';
+  }
+  
+  google.script.run.withSuccessHandler(csvContent => {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Download as CSV';
+    }
+    
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    const timestamp = Utilities.formatDate(new Date(), 'GMT+7', 'yyyyMMdd_HHmmss');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `project_financial_reports_${timestamp}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }).withFailureHandler(error => {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Download as CSV';
+    }
+    alert('Error downloading file: ' + error.message);
+  }).exportProjectFinancialReportsAsCSV(projectId);
+}
 </script>
