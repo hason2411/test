@@ -1,32 +1,38 @@
 <div class="flex flex-col lg:flex-row gap-8">
   
   <div class="flex-[2] space-y-8">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="stat-card">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div class="stat-card hover:shadow-lg transition-shadow">
         <div class="flex justify-between items-start">
           <span class="label-title" data-i18n="active_projects">Active Projects</span>
           <div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">📋</div>
         </div>
         <h3 class="stat-value" id="activeProjectsCount">--</h3>
-        <p class="trend-up">↗ +2% <span data-i18n="vs_last_month">vs last month</span></p>
+        <p class="trend-up">↗ <span id="activeProjectsTrend">+2%</span> <span data-i18n="vs_last_month">vs last month</span></p>
       </div>
-      
-      <div class="stat-card">
+      <div class="stat-card hover:shadow-lg transition-shadow">
         <div class="flex justify-between items-start">
-          <span class="label-title" data-i18n="equipment_field">Equipment in Field</span>
-          <div class="p-2 bg-blue-50 rounded-lg text-blue-600">📡</div>
+          <span class="label-title" data-i18n="total_projects">Total Projects</span>
+          <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">📊</div>
         </div>
-        <h3 class="stat-value" id="fieldEquipCount">--</h3>
-        <p class="trend-down">↘ -5% <span data-i18n="maintenance_alert">maintenance alert</span></p>
+        <h3 class="stat-value" id="totalProjectsCount">--</h3>
+        <p class="text-xs text-slate-400">All projects tracked</p>
       </div>
-
-      <div class="stat-card">
+      <div class="stat-card hover:shadow-lg transition-shadow">
         <div class="flex justify-between items-start">
-          <span class="label-title" data-i18n="pending_requests">Pending Requests</span>
-          <div class="p-2 bg-orange-50 rounded-lg text-orange-600">📅</div>
+          <span class="label-title" data-i18n="total_budget">Total Budget</span>
+          <div class="p-2 bg-green-50 rounded-lg text-green-600">💰</div>
         </div>
-        <h3 class="stat-value" id="pendingReqCount">--</h3>
-        <p class="trend-up">↗ +15% <span data-i18n="priority_shift">priority shift</span></p>
+        <h3 class="stat-value" id="totalBudget">--</h3>
+        <p class="text-xs text-slate-400">USD</p>
+      </div>
+      <div class="stat-card hover:shadow-lg transition-shadow">
+        <div class="flex justify-between items-start">
+          <span class="label-title" data-i18n="completion_rate">Completion Rate</span>
+          <div class="p-2 bg-purple-50 rounded-lg text-purple-600">✅</div>
+        </div>
+        <h3 class="stat-value" id="completionRate">--%</h3>
+        <p class="text-xs text-slate-400">Tasks done</p>
       </div>
     </div>
 

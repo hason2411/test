@@ -22,6 +22,9 @@
       "active_projects": "Dự án Đang hoạt động",
       "equipment_field": "Thiết bị Tại chỗ",
       "pending_requests": "Yêu cầu Chờ xử lý",
+      "total_projects": "Tổng số Dự án",
+      "total_budget": "Tổng Ngân sách",
+      "completion_rate": "Tỷ lệ Hoàn thành",
       "workload_overview": "Tổng quan Công việc",
       "current_tasks_staff": "Nhiệm vụ hiện tại theo nhân viên (Theo dõi Kiệt sức)",
       "view_details": "Xem Chi tiết →",
@@ -116,6 +119,9 @@
       "active_projects": "Active Projects",
       "equipment_field": "Equipment in Field",
       "pending_requests": "Pending Requests",
+      "total_projects": "Total Projects",
+      "total_budget": "Total Budget",
+      "completion_rate": "Completion Rate",
       "workload_overview": "Workload Overview",
       "current_tasks_staff": "Current tasks per staff member (Burnout Tracking)",
       "view_details": "View Details →",
@@ -383,6 +389,9 @@
         return;
       }
       if(document.getElementById('activeProjectsCount')) document.getElementById('activeProjectsCount').innerText = Number(data.totalProjects || data.projects || 0).toLocaleString();
+      if(document.getElementById('totalProjectsCount')) document.getElementById('totalProjectsCount').innerText = Number(data.totalProjects || 0).toLocaleString();
+      if(document.getElementById('totalBudget')) document.getElementById('totalBudget').innerText = '$' + (Number(data.totalBudget || 0)).toLocaleString();
+      if(document.getElementById('completionRate')) document.getElementById('completionRate').innerText = (Number(data.completionRate || 0)) + '%';
       if(document.getElementById('fieldEquipCount')) document.getElementById('fieldEquipCount').innerText = Number(data.equip || 0).toLocaleString();
       if(document.getElementById('pendingReqCount')) document.getElementById('pendingReqCount').innerText = Number(data.pending || 0).toLocaleString();
 
