@@ -1210,9 +1210,14 @@
     
     if (currentPage === 'Tasks') {
       title.innerText = "New Project Task";
-      // Tạo khung input & Select box cho nhân sự
+      // Tạo khung input & Select box cho project và nhân sự
       fields.innerHTML = `
-        <input id="f1" class="${s}" placeholder="Project ID / Context">
+        <div class="relative mb-3">
+           <select id="f1" class="${s} appearance-none cursor-pointer">
+              <option value="" disabled selected>Loading projects...</option>
+           </select>
+           <div class="absolute right-4 top-4 text-slate-400 pointer-events-none">▼</div>
+        </div>
         <input id="f2" class="${s}" placeholder="Task Detail">
         <div class="relative mb-3">
            <select id="f3" class="${s} appearance-none cursor-pointer">
@@ -1228,7 +1233,8 @@
         <input id="f5" type="date" class="${s}">
         <input id="f6" value="Todo" type="hidden">
       `;
-      // Gọi server lấy danh sách nhân sự Rảnh/Bận
+      // Gọi server lấy danh sách dự án và nhân sự Rảnh/Bận
+      google.script.run.withSuccessHandler(populateProjectSelect).getProjectsData();
       google.script.run.withSuccessHandler(populateAssigneeSelect).getStaffAvailability();
 
     } else if (currentPage === 'Inventory') {
@@ -1265,6 +1271,24 @@ function populateAssigneeSelect(users) {
       html += `<option value="${u.name}" class="text-slate-900 font-bold">🟢 ${u.name} - ${u.role}</option>`;
     }
   });
+  
+  select.innerHTML = html;
+}
+
+function populateProjectSelect(projects) {
+  const select = document.getElementById('f1');
+  if (!select) return;
+
+  let html = `<option value="" disabled selected>-- Select a project --</option>`;
+  
+  if (Array.isArray(projects) && projects.length > 0) {
+    projects.forEach(project => {
+      // Assuming project is [id, title, budget, start_date, end_date, lead_id]
+      const id = project[0];
+      const title = project[1];
+      html += `<option value="${id}">${title}</option>`;
+    });
+  }
   
   select.innerHTML = html;
 }
