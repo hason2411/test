@@ -1279,14 +1279,15 @@ function populateProjectSelect(projects) {
   const select = document.getElementById('f1');
   if (!select) return;
 
-  let html = `<option value="" disabled selected>-- Select a project --</option>`;
+  let html = `<option value="" disabled selected>-- Chọn dự án --</option>`;
   
   if (Array.isArray(projects) && projects.length > 0) {
     projects.forEach(project => {
-      // Assuming project is [id, title, budget, start_date, end_date, lead_id]
-      const id = project[0];
+      // project is [id, title, budget, start_date, end_date, lead_id]
+      // Store project title in the value (more readable than ID)
       const title = project[1];
-      html += `<option value="${id}">${title}</option>`;
+      const budget = project[2];
+      html += `<option value="${title}" style="font-weight: 500;">📊 ${title} - $${Number(budget || 0).toLocaleString()}</option>`;
     });
   }
   
