@@ -1702,14 +1702,38 @@ function openAddFinancialReportModal(projectId) {
   // Load existing invoices to link
   google.script.run.withSuccessHandler(invoices => {
     const selectElement = document.getElementById('existingInvoiceSelect');
+    if (!selectElement) {
+      console.warn('existingInvoiceSelect not found');
+      return;
+    }
+    
+    let html = `<option value="" disabled selected>-- Select an existing invoice --</option>`;
+    
+    if (Array.isArray(invoices) && invoices.length > 0) {
+      invoices.forEach((inv, index) => {
+        try {
+          // inv is [id, invoice_number, vendor, amount, date, category, description, status]
+          const invoiceId = inv[0] || '';
+          const invoiceNum = inv[1] || 'Unknown';
+          const vendor = inv[2] || 'Unknown Vendor';
+          const amount = Number(inv[3]) || 0;
+          
+          if (invoiceId) {
+            html += `<option value="${invoiceId}">${invoiceNum} - ${vendor} ($${amount.toLocaleString()})</option>`;
+          }
+        } catch (e) {
+          console.error('Error processing invoice row', index, e);
+        }
+      });
+    }
+    
+    selectElement.innerHTML = html;
+    console.log(`Loaded ${invoices.length} invoices`);
+  }).withFailureHandler(error => {
+    console.error('Error loading invoices:', error);
+    const selectElement = document.getElementById('existingInvoiceSelect');
     if (selectElement) {
-      let html = `<option value="" disabled selected>-- Select an existing invoice --</option>`;
-      if (Array.isArray(invoices) && invoices.length > 0) {
-        invoices.forEach(inv => {
-          html += `<option value="${inv[0]}">${inv[1]} - ${inv[2]} ($${Number(inv[3]).toLocaleString()})</option>`;
-        });
-      }
-      selectElement.innerHTML = html;
+      selectElement.innerHTML = `<option value="" disabled selected>Error loading invoices: ${error.message}</option>`;
     }
   }).getFinancialReports();
   
@@ -2003,7 +2027,8 @@ function downloadInvoiceTemplate() {
  * Downloads invoice summary as CSV file
  */
 function downloadInvoicesSummaryCSV() {
-  const btn = document.querySelector('[onclick="downloadInvoicesSummaryCSV()"]');
+  // Find button by ID instead of onclick selector
+  const btn = document.getElementById('downloadInvoiceBtn');
   if (btn) {
     btn.disabled = true;
     btn.textContent = 'Downloading...';
@@ -2012,7 +2037,12 @@ function downloadInvoicesSummaryCSV() {
   google.script.run.withSuccessHandler(csvContent => {
     if (btn) {
       btn.disabled = false;
-      btn.textContent = 'Download as CSV';
+      btn.textContent = 'Download CSV';
+    }
+    
+    if (!csvContent) {
+      alert('No data to download');
+      return;
     }
     
     // Create blob and download
@@ -2020,7 +2050,15 @@ function downloadInvoicesSummaryCSV() {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     
-    const timestamp = Utilities.formatDate(new Date(), 'GMT+7', 'yyyyMMdd_HHmmss');
+    // Use JavaScript Date instead of Utilities.formatDate
+    const now = new Date();
+    const timestamp = now.getFullYear().toString() + 
+                     String(now.getMonth() + 1).padStart(2, '0') +
+                     String(now.getDate()).padStart(2, '0') + '_' +
+                     String(now.getHours()).padStart(2, '0') +
+                     String(now.getMinutes()).padStart(2, '0') +
+                     String(now.getSeconds()).padStart(2, '0');
+    
     link.setAttribute('href', url);
     link.setAttribute('download', `invoice_summary_${timestamp}.csv`);
     link.style.visibility = 'hidden';
@@ -2028,11 +2066,13 @@ function downloadInvoicesSummaryCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }).withFailureHandler(error => {
     if (btn) {
       btn.disabled = false;
-      btn.textContent = 'Download as CSV';
+      btn.textContent = 'Download CSV';
     }
+    console.error('Download error:', error);
     alert('Error downloading file: ' + error.message);
   }).exportInvoicesAsCSV();
 }
@@ -2047,7 +2087,7 @@ function downloadProjectFinancialReportsCSV() {
     return;
   }
   
-  const btn = document.querySelector('[onclick="downloadProjectFinancialReportsCSV()"]');
+  const btn = document.getElementById('downloadProjectReportsBtn');
   if (btn) {
     btn.disabled = true;
     btn.textContent = 'Downloading...';
@@ -2056,8 +2096,45 @@ function downloadProjectFinancialReportsCSV() {
   google.script.run.withSuccessHandler(csvContent => {
     if (btn) {
       btn.disabled = false;
-      btn.textContent = 'Download as CSV';
+      btn.textContent = 'Download';
     }
+    
+    if (!csvContent) {
+      alert('No data to download');
+      return;
+    }
+    
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    // Use JavaScript Date instead of Utilities.formatDate
+    const now = new Date();
+    const timestamp = now.getFullYear().toString() + 
+                     String(now.getMonth() + 1).padStart(2, '0') +
+                     String(now.getDate()).padStart(2, '0') + '_' +
+                     String(now.getHours()).padStart(2, '0') +
+                     String(now.getMinutes()).padStart(2, '0') +
+                     String(now.getSeconds()).padStart(2, '0');
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `project_financial_reports_${timestamp}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }).withFailureHandler(error => {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Download';
+    }
+    console.error('Download error:', error);
+    alert('Error downloading file: ' + error.message);
+  }).exportProjectFinancialReportsAsCSV(projectId);
+}
     
     // Create blob and download
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
