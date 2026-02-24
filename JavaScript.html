@@ -1854,4 +1854,148 @@ function closeInvoiceSummaryModal() {
     modal.classList.add('hidden');
   }
 }
+
+// =============================================================================
+// BULK IMPORT FUNCTIONS
+// =============================================================================
+
+function handleInvoiceFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const csv = e.target.result;
+      const invoices = parseCSV(csv);
+      
+      if (!invoices || invoices.length === 0) {
+        alert('No valid data found in file');
+        return;
+      }
+      
+      // Show preview
+      const preview = document.getElementById('invoicePreview');
+      if (preview) {
+        preview.innerHTML = `
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p class="text-sm font-medium text-blue-900">Preview: ${invoices.length} invoices ready to import</p>
+            <div class="mt-2 max-h-40 overflow-y-auto text-xs">
+              ${invoices.slice(0, 5).map((inv, i) => `
+                <div class="text-blue-800 py-1">
+                  ${i + 1}. ${inv[0]} | ${inv[1]} | $${inv[2]}
+                </div>
+              `).join('')}
+              ${invoices.length > 5 ? `<div class="text-blue-600 py-1">... and ${invoices.length - 5} more</div>` : ''}
+            </div>
+          </div>
+        `;
+      }
+      
+      // Store data for submission
+      window.invoicesToImport = invoices;
+      
+    } catch (error) {
+      alert('Error parsing file: ' + error.message);
+    }
+  };
+  
+  reader.readAsText(file);
+}
+
+function parseCSV(csvText) {
+  const lines = csvText.split('\n');
+  const invoices = [];
+  
+  // Skip header (first line)
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue; // Skip empty lines
+    
+    // Parse CSV line (handle simple cases without quotes)
+    const parts = line.split(',').map(s => s.trim());
+    if (parts.length >= 3) {
+      invoices.push([
+        parts[0], // invoice_number
+        parts[1], // vendor
+        parts[2], // amount
+        parts[3] || '', // date (optional)
+        parts[4] || '', // category (optional)
+        parts[5] || '', // description (optional)
+        parts[6] || 'Pending' // status (optional)
+      ]);
+    }
+  }
+  
+  return invoices;
+}
+
+function submitBulkImportInvoices() {
+  const invoices = window.invoicesToImport;
+  if (!invoices || invoices.length === 0) {
+    alert('No invoices to import. Please upload a file first.');
+    return;
+  }
+  
+  const btn = document.getElementById('bulkImportBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Importing...';
+  }
+  
+  google.script.run.withSuccessHandler(result => {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Import Invoices';
+    }
+    alert(result.message + (result.errors.length > 0 ? '\n\nErrors:\n' + result.errors.slice(0, 5).join('\n') : ''));
+    closeBulkImportModal();
+    // Refresh invoice summary
+    openInvoiceSummaryModal();
+  }).withFailureHandler(error => {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Import Invoices';
+    }
+    alert('Import failed: ' + error.message);
+  }).importInvoicesBatch(invoices);
+}
+
+function openBulkImportModal() {
+  const modal = document.getElementById('bulkImportModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    // Reset form
+    document.getElementById('invoiceFileInput').value = '';
+    document.getElementById('invoicePreview').innerHTML = '';
+    window.invoicesToImport = [];
+  }
+}
+
+function closeBulkImportModal() {
+  const modal = document.getElementById('bulkImportModal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+function downloadInvoiceTemplate() {
+  const csvHeader = 'invoice_number,vendor,amount,date,category,description,status\n';
+  const csvExample = 'INV-2024-001,Vendor A,5000,2024-02-01,Equipment,GPS Equipment,Pending\n';
+  const csvExample2 = 'INV-2024-002,Vendor B,3000,2024-02-02,Services,Consultation Services,Paid\n';
+  
+  const csvContent = csvHeader + csvExample + csvExample2;
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'invoice_template.csv');
+  link.style.visibility = 'hidden';
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 </script>

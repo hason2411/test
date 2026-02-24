@@ -1204,3 +1204,126 @@ function getInvoiceSummary() {
     return [];
   }
 }
+
+/**
+ * Imports multiple invoices from batch data (bulk upload).
+ * @param {Array} invoicesData - Array of invoice data: [[invoiceNum, vendor, amount, date, category, description, status], ...]
+ * @returns {Object} {success: count, failed: count, errors: []}
+ */
+function importInvoicesBatch(invoicesData) {
+  try {
+    const currentUser = getCurrentUserInfo();
+    requireRole('Coordinator');
+    
+    const ss = getSpreadsheet();
+    let sheet = ss.getSheetByName('FinancialReports');
+    
+    if (!sheet) {
+      sheet = ss.insertSheet('FinancialReports');
+      sheet.appendRow(['id', 'invoice_number', 'vendor', 'amount', 'date', 'category', 'description', 'status']);
+    }
+    
+    let successCount = 0;
+    let failCount = 0;
+    const errors = [];
+    
+    // Process each invoice data row
+    if (Array.isArray(invoicesData)) {
+      invoicesData.forEach((data, index) => {
+        try {
+          // Validate required fields
+          const invoiceNum = (data[0] || '').toString().trim();
+          const vendor = (data[1] || '').toString().trim();
+          const amount = Number(data[2]) || 0;
+          
+          if (!invoiceNum || !vendor || amount <= 0) {
+            failCount++;
+            errors.push(`Row ${index + 1}: Missing invoice number, vendor, or invalid amount`);
+            return;
+          }
+          
+          const id = "INV-" + Utilities.formatDate(new Date(), "GMT+7", "HHmmss") + "-" + index;
+          const date = data[3] ? new Date(data[3]) : new Date();
+          const category = data[4] ? data[4].toString().trim() : '';
+          const description = data[5] ? data[5].toString().trim() : '';
+          const status = data[6] ? data[6].toString().trim() : 'Pending';
+          
+          sheet.appendRow([id, invoiceNum, vendor, amount, date, category, description, status]);
+          successCount++;
+        } catch (e) {
+          failCount++;
+          errors.push(`Row ${index + 1}: ${e.toString()}`);
+        }
+      });
+    }
+    
+    logActivity('InvoiceBulkImport', `Imported ${successCount} invoices (${failCount} failed)`, currentUser.name);
+    clearCache('financialReportsData');
+    
+    return {
+      success: successCount,
+      failed: failCount,
+      errors: errors,
+      message: `Successfully imported ${successCount} invoices. ${failCount} failed.`
+    };
+  } catch (error) {
+    Logger.log('Error in importInvoicesBatch: ' + error.toString());
+    throw new Error('Failed to import invoices: ' + error.message);
+  }
+}
+
+/**
+ * Batch link invoices to a project (bulk allocation).
+ * @param {string} projectId - The project ID.
+ * @param {Array} allocations - Array of [invoiceId, costAllocation]
+ * @returns {Object} {success: count, failed: count}
+ */
+function bulkLinkInvoicesToProject(projectId, allocations) {
+  try {
+    const currentUser = getCurrentUserInfo();
+    requireRole('Coordinator');
+    
+    const ss = getSpreadsheet();
+    let sheet = ss.getSheetByName('InvoiceProjects');
+    
+    if (!sheet) {
+      sheet = ss.insertSheet('InvoiceProjects');
+      sheet.appendRow(['id', 'invoice_id', 'project_id', 'cost_allocation', 'linked_date']);
+    }
+    
+    // Validate project exists
+    const projects = getProjectsData();
+    const project = projects.find(p => p[0] === projectId);
+    if (!project) throw new Error('Project not found');
+    
+    let successCount = 0;
+    let failCount = 0;
+    
+    allocations.forEach(([invoiceId, costAllocation]) => {
+      try {
+        if (!invoiceId || !costAllocation || Number(costAllocation) <= 0) {
+          failCount++;
+          return;
+        }
+        
+        const linkId = "LNK-" + Utilities.formatDate(new Date(), "GMT+7", "HHmmss") + "-" + successCount;
+        sheet.appendRow([linkId, invoiceId, projectId, Number(costAllocation), new Date()]);
+        successCount++;
+      } catch (e) {
+        failCount++;
+      }
+    });
+    
+    logActivity('InvoiceBulkLink', `Linked ${successCount} invoices to project ${project[1]}`, currentUser.name);
+    clearCache('invoiceProjectsData');
+    
+    return {
+      success: successCount,
+      failed: failCount,
+      message: `Linked ${successCount} invoices to project. ${failCount} failed.`
+    };
+  } catch (error) {
+    Logger.log('Error in bulkLinkInvoicesToProject: ' + error.toString());
+    throw new Error('Failed to bulk link invoices: ' + error.message);
+  }
+}
