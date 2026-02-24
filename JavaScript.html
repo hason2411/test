@@ -388,9 +388,14 @@
         console.warn('loadDashboardData: received no data');
         return;
       }
-      if(document.getElementById('activeProjectsCount')) document.getElementById('activeProjectsCount').innerText = Number(data.totalProjects || data.projects || 0).toLocaleString();
-      if(document.getElementById('totalProjectsCount')) document.getElementById('totalProjectsCount').innerText = Number(data.totalProjects || 0).toLocaleString();
+      const active = Number(data.projects || 0);
+      const total = Number(data.totalProjects || 0);
+      if(document.getElementById('activeProjectsCount')) document.getElementById('activeProjectsCount').innerText = active.toLocaleString();
+      if(document.getElementById('activeProjectsSub')) document.getElementById('activeProjectsSub').innerText = `${active.toLocaleString()} / ${total.toLocaleString()} active`;
+      if(document.getElementById('totalProjectsCount')) document.getElementById('totalProjectsCount').innerText = total.toLocaleString();
+      if(document.getElementById('totalProjectsSub')) document.getElementById('totalProjectsSub').innerText = `${total.toLocaleString()} total`;
       if(document.getElementById('totalBudget')) document.getElementById('totalBudget').innerText = '$' + (Number(data.totalBudget || 0)).toLocaleString();
+      if(document.getElementById('totalBudgetSub')) document.getElementById('totalBudgetSub').innerText = `Budget reserved`;
       if(document.getElementById('completionRate')) document.getElementById('completionRate').innerText = (Number(data.completionRate || 0)) + '%';
       if(document.getElementById('fieldEquipCount')) document.getElementById('fieldEquipCount').innerText = Number(data.equip || 0).toLocaleString();
       if(document.getElementById('pendingReqCount')) document.getElementById('pendingReqCount').innerText = Number(data.pending || 0).toLocaleString();
@@ -399,17 +404,29 @@
       (function renderTrendsSafely() {
         try {
           const completion = Number((data && data.completionRate) ? data.completionRate : 0);
+          // Note: trend-up and trend-down elements don't exist in redesigned dashboard
+          // This code is kept for backwards compatibility with old dashboard layouts
           const trends = document.querySelectorAll('.stat-card .trend-up, .stat-card .trend-down');
-          if (trends && trends.length > 0) {
-            if (trends[0]) trends[0].textContent = `↗ ${completion}% completed`;
+          if (trends && trends.length > 0 && trends[0]) {
+            trends[0].textContent = `↗ ${completion}% completed`;
           }
         } catch (e) {
-          console.warn('Failed to render trends:', e);
+          // Silently ignore trend rendering errors - new dashboard doesn't use these
         }
       })();
 
-      renderChart(data.workload);
-      renderFeed(data.feed);
+      // Safely render chart and feed with error handling
+      try {
+        if (data.workload) renderChart(data.workload);
+      } catch (e) {
+        console.warn('Dashboard chart rendering failed:', e);
+      }
+      
+      try {
+        if (data.feed && Array.isArray(data.feed)) renderFeed(data.feed);
+      } catch (e) {
+        console.warn('Dashboard feed rendering failed:', e);
+      }
     }).getDashboardStats();
   }
 
@@ -1512,22 +1529,30 @@ function submitAddProject(event) {
   }
 
   const btn = document.getElementById('addProjectBtn');
+  if (!btn) {
+    showToast('Error: Create button not found', 'error');
+    return;
+  }
   btn.disabled = true;
   btn.textContent = 'Creating...';
 
   google.script.run
     .withSuccessHandler((response) => {
       console.log('addProject response:', response);
-      btn.disabled = false;
-      btn.textContent = 'Create Project';
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Create Project';
+      }
       closeProjectModal();
       showToast('Project created successfully!', 'success');
       loadProjects();
     })
     .withFailureHandler(error => {
       console.error('addProject error:', error);
-      btn.disabled = false;
-      btn.textContent = 'Create Project';
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Create Project';
+      }
       const msg = (error && error.message) ? error.message : (error || 'Unknown error');
       if (msg.toString().toLowerCase().includes('requires role')) {
         showToast('Permission denied: you need Coordinator role to create projects. Update your role in the Users sheet or ask Admin.', 'error');
