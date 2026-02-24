@@ -8,7 +8,7 @@
           <div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">📋</div>
         </div>
         <h3 class="stat-value" id="activeProjectsCount">--</h3>
-        <p class="trend-up">↗ <span id="activeProjectsTrend">+2%</span> <span data-i18n="vs_last_month">vs last month</span></p>
+        <p class="stat-subtext" id="activeProjectsSub">-- / -- active</p>
       </div>
       <div class="stat-card hover:shadow-lg transition-shadow">
         <div class="flex justify-between items-start">
@@ -16,7 +16,7 @@
           <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">📊</div>
         </div>
         <h3 class="stat-value" id="totalProjectsCount">--</h3>
-        <p class="text-xs text-slate-400">All projects tracked</p>
+        <p class="stat-subtext" id="totalProjectsSub">-- total</p>
       </div>
       <div class="stat-card hover:shadow-lg transition-shadow">
         <div class="flex justify-between items-start">
@@ -24,7 +24,7 @@
           <div class="p-2 bg-green-50 rounded-lg text-green-600">💰</div>
         </div>
         <h3 class="stat-value" id="totalBudget">--</h3>
-        <p class="text-xs text-slate-400">USD</p>
+        <p class="stat-subtext" id="totalBudgetSub">Budget reserved</p>
       </div>
       <div class="stat-card hover:shadow-lg transition-shadow">
         <div class="flex justify-between items-start">
@@ -93,7 +93,7 @@
     </div>
     
     <form onsubmit="submitPost(event)">
-      <textarea id="postContent" class="w-full border border-slate-200 rounded-xl p-4 text-sm bg-slate-50 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none resize-none" rows="4" placeholder="Write your update..." data-i18n="write_your_update" required></textarea>
+      <textarea id="postContent" class="w-full border border-slate-200 rounded-xl p-4 text-sm bg-slate-50 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none resize-none" rows="4" placeholder="Write your update..." required></textarea>
       
       <div class="flex items-center gap-3 mt-4">
         <label class="flex items-center gap-2 text-sm">
