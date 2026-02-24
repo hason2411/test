@@ -1098,17 +1098,32 @@ function getProjectFinancialReports(projectId) {
     const links = linkSheet.getDataRange().getValues().slice(1);
     const reports = getFinancialReports();
     
+    // Ensure projectId is a string for comparison
+    const projId = String(projectId);
+    
     // Find all invoices linked to this project
     const projectInvoices = links
-      .filter(link => link[2] === projectId)
+      .filter(link => {
+        try {
+          return String(link[2]) === projId;
+        } catch (e) {
+          return false;
+        }
+      })
       .map(link => {
-        const invoice = reports.find(r => r[0] === link[1]);
+        const invoice = reports.find(r => {
+          try {
+            return String(r[0]) === String(link[1]);
+          } catch (e) {
+            return false;
+          }
+        });
         return {
-          linkId: link[0],
-          invoiceId: link[1],
-          projectId: link[2],
-          costAllocation: link[3],
-          linkedDate: link[4],
+          linkId: link[0] || '',
+          invoiceId: link[1] || '',
+          projectId: link[2] || '',
+          costAllocation: Number(link[3]) || 0,
+          linkedDate: link[4] || null,
           invoice: invoice || {}
         };
       });
@@ -1336,40 +1351,48 @@ function exportInvoicesAsCSV() {
   try {
     const summary = getInvoiceSummary();
     
+    if (!Array.isArray(summary) || summary.length === 0) {
+      return 'Invoice ID,Invoice Number,Vendor,Total Amount,Linked Projects,Allocated Amount,Remaining Amount,Status\n';
+    }
+    
     // Header
     let csv = 'Invoice ID,Invoice Number,Vendor,Total Amount,Linked Projects,Allocated Amount,Remaining Amount,Status\n';
     
     // Rows
     summary.forEach(invoice => {
-      const linkedProjects = invoice.linkedProjects
-        .map(p => `${p.projectName}($${p.allocation})`)
-        .join('; ');
-      
-      const row = [
-        invoice.invoiceId,
-        invoice.invoiceNumber,
-        invoice.vendor,
-        invoice.totalAmount,
-        linkedProjects || 'None',
-        invoice.totalAllocated,
-        invoice.remainingAmount,
-        invoice.status
-      ];
-      
-      // Escape fields with commas/quotes
-      csv += row.map(field => {
-        const str = String(field);
-        if (str.includes(',') || str.includes('"')) {
-          return `"${str.replace(/"/g, '""')}"`;
-        }
-        return str;
-      }).join(',') + '\n';
+      try {
+        const linkedProjects = (invoice.linkedProjects || [])
+          .map(p => `${p.projectName || 'Unknown'}($${p.allocation || 0})`)
+          .join('; ') || 'None';
+        
+        const row = [
+          invoice.invoiceId || '',
+          invoice.invoiceNumber || '',
+          invoice.vendor || '',
+          invoice.totalAmount || 0,
+          linkedProjects,
+          invoice.totalAllocated || 0,
+          invoice.remainingAmount || 0,
+          invoice.status || 'Pending'
+        ];
+        
+        // Escape fields with commas/quotes
+        csv += row.map(field => {
+          const str = String(field);
+          if (str.includes(',') || str.includes('"')) {
+            return `"${str.replace(/"/g, '""')}"`;
+          }
+          return str;
+        }).join(',') + '\n';
+      } catch (e) {
+        Logger.log('Error processing invoice row: ' + e.toString());
+      }
     });
     
     return csv;
   } catch (error) {
     Logger.log('Error in exportInvoicesAsCSV: ' + error.toString());
-    throw new Error('Failed to export invoices: ' + error.message);
+    return 'Error,Error in exporting invoices\n' + error.message;
   }
 }
 
@@ -1382,40 +1405,72 @@ function exportProjectFinancialReportsAsCSV(projectId) {
   try {
     const projectReports = getProjectFinancialReports(projectId);
     const projects = getProjectsData();
-    const project = projects.find(p => p[0] === projectId);
+    const project = projects.find(p => {
+      try {
+        return String(p[0]) === String(projectId);
+      } catch (e) {
+        return false;
+      }
+    });
     
     // Header with project info
-    let csv = `Financial Report for Project: ${project ? project[1] : 'Unknown'}\n`;
-    csv += `Export Date: ${Utilities.formatDate(new Date(), 'GMT+7', 'yyyy-MM-dd HH:mm:ss')}\n\n`;
+    const projectName = project && project[1] ? project[1] : 'Unknown Project';
+    const exportDate = Utilities.formatDate(new Date(), 'GMT+7', 'yyyy-MM-dd HH:mm:ss');
+    
+    let csv = `Financial Report for Project: ${projectName}\n`;
+    csv += `Export Date: ${exportDate}\n\n`;
     
     // Table header
     csv += 'Invoice ID,Invoice Number,Vendor,Amount,Category,Cost Allocation,Linked Date\n';
     
     // Rows
-    projectReports.forEach(report => {
-      const inv = report.invoice || {};
-      const row = [
-        report.invoiceId,
-        inv[1] || '',
-        inv[2] || '',
-        inv[3] || 0,
-        inv[5] || '',
-        report.costAllocation,
-        report.linkedDate ? Utilities.formatDate(new Date(report.linkedDate), 'GMT+7', 'yyyy-MM-dd') : ''
-      ];
-      
-      csv += row.map(field => {
-        const str = String(field);
-        if (str.includes(',') || str.includes('"')) {
-          return `"${str.replace(/"/g, '""')}"`;
+    if (Array.isArray(projectReports) && projectReports.length > 0) {
+      projectReports.forEach(report => {
+        try {
+          const inv = report.invoice || {};
+          const invoiceNum = inv[1] || '';
+          const vendor = inv[2] || '';
+          const amount = inv[3] || 0;
+          const category = inv[5] || '';
+          
+          // Format linked date
+          let linkedDateStr = '';
+          if (report.linkedDate) {
+            try {
+              linkedDateStr = Utilities.formatDate(new Date(report.linkedDate), 'GMT+7', 'yyyy-MM-dd');
+            } catch (e) {
+              linkedDateStr = String(report.linkedDate);
+            }
+          }
+          
+          const row = [
+            report.invoiceId || '',
+            invoiceNum,
+            vendor,
+            amount,
+            category,
+            report.costAllocation || 0,
+            linkedDateStr
+          ];
+          
+          csv += row.map(field => {
+            const str = String(field);
+            if (str.includes(',') || str.includes('"')) {
+              return `"${str.replace(/"/g, '""')}"`;
+            }
+            return str;
+          }).join(',') + '\n';
+        } catch (e) {
+          Logger.log('Error processing report row: ' + e.toString());
         }
-        return str;
-      }).join(',') + '\n';
-    });
+      });
+    } else {
+      csv += 'No financial reports linked to this project\n';
+    }
     
     return csv;
   } catch (error) {
     Logger.log('Error in exportProjectFinancialReportsAsCSV: ' + error.toString());
-    throw new Error('Failed to export project reports: ' + error.message);
+    return 'Error in exporting project reports\n' + error.message;
   }
 }

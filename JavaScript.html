@@ -1669,21 +1669,36 @@ function loadProjectFinancialReports(projectId) {
     
     container.innerHTML = `
       <div class="space-y-3">
-        ${data.map(item => `
-          <div class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition">
-            <div class="flex-1">
-              <p class="font-medium text-slate-900">${item.invoice[1] || 'Unknown Invoice'}</p>
-              <div class="text-xs text-slate-500 mt-1">
-                <span class="mr-3">Vendor: ${item.invoice[2] || 'N/A'}</span>
-                <span>Allocated: $${Number(item.costAllocation).toLocaleString()}</span>
+        ${data.map(item => {
+          try {
+            // Safely access invoice array with null checks
+            const inv = item && item.invoice ? item.invoice : [];
+            const invoiceNum = Array.isArray(inv) && inv[1] ? inv[1] : 'Unknown Invoice';
+            const vendor = Array.isArray(inv) && inv[2] ? inv[2] : 'N/A';
+            const costAlloc = item && item.costAllocation ? Number(item.costAllocation) : 0;
+            const invoiceId = item && item.invoiceId ? item.invoiceId : '';
+            const linkId = item && item.linkId ? item.linkId : '';
+            
+            return `
+              <div class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition">
+                <div class="flex-1">
+                  <p class="font-medium text-slate-900">${invoiceNum}</p>
+                  <div class="text-xs text-slate-500 mt-1">
+                    <span class="mr-3">Vendor: ${vendor}</span>
+                    <span>Allocated: $${costAlloc.toLocaleString()}</span>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <button onclick="viewInvoiceDetails('${invoiceId}')" class="px-3 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100">View</button>
+                  <button onclick="extractInvoiceFromProject('${linkId}')" class="px-3 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100">Remove</button>
+                </div>
               </div>
-            </div>
-            <div class="flex gap-2">
-              <button onclick="viewInvoiceDetails('${item.invoiceId}')" class="px-3 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100">View</button>
-              <button onclick="extractInvoiceFromProject('${item.linkId}')" class="px-3 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100">Remove</button>
-            </div>
-          </div>
-        `).join('')}
+            `;
+          } catch (e) {
+            console.error('Error rendering report item:', e, item);
+            return '<div class="text-red-500 text-xs p-2">Error rendering report</div>';
+          }
+        }).join('')}
       </div>
     `;
   }).getProjectFinancialReports(projectId);
